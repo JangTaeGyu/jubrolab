@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { COUNTS, PROJECTS, SHARED_TECH, type Project, type TechTag } from '@/data/projects';
+import { GLYPH_BOX, TECH_ICONS } from '@/data/tech-icons';
+import { TechIcon } from '@/components/tech-icon';
+import { BrandMark } from '@/components/brand-mark';
 
 /* ── 색 ───────────────────────────────────────────────
    globals.css 와 같은 값. 캔버스는 CSS 변수를 못 읽어 여기서 다시 적는다. */
@@ -191,7 +194,7 @@ export function Graph() {
         n.hot += ((n === hover.current || n === held.current || isPicked ? 1 : 0) - n.hot) * 0.2;
       });
 
-      draw(ctx, size.current, nodes.current, links.current, hover.current);
+      draw(ctx, size.current, nodes.current, links.current);
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
@@ -257,8 +260,12 @@ export function Graph() {
 
       {/* 머리말 */}
       <header className="pointer-events-none fixed inset-x-0 top-0 z-10 flex items-baseline justify-between gap-4 px-5 py-3.5 sm:px-7">
-        <p className="font-display text-[14px] font-extrabold tracking-[-0.01em]">
-          jubro<span className="text-faint">·</span>lab
+        <p className="flex items-center gap-2 font-display text-[15px] font-bold tracking-[-0.03em]">
+          <BrandMark className="size-[19px] shrink-0" />
+          {/* 자국 하나로 묶는다 — flex 자식으로 흩어지면 gap 이 글자 사이에도 들어간다. */}
+          <span>
+            jubro<span className="text-faint">·</span>lab
+          </span>
         </p>
         <p className="font-mono text-[10.5px] tracking-[0.14em] text-faint tabular-nums">
           NODES {COUNTS.total}
@@ -269,12 +276,14 @@ export function Graph() {
         </p>
       </header>
 
-      <div className="pointer-events-none fixed top-14 left-5 z-10 max-w-[36ch] sm:top-16 sm:left-8">
-        <h1 className="font-display text-[clamp(22px,2.7vw,36px)] leading-[1.14] font-extrabold tracking-[-0.045em]">
+      {/* 제목이 커지면서 한 줄이 36ch 를 넘겼다. 제목은 넓게 두고 설명만 36ch 로 묶는다. */}
+      <div className="pointer-events-none fixed top-14 left-5 z-10 max-w-[min(60ch,52vw)] sm:top-16 sm:left-8">
+        <h1 className="font-display text-[clamp(24px,3.1vw,42px)] leading-[1.06] font-black tracking-[-0.04em]">
           아이디어를 현실로 만드는
           <br />1인 개발 연구실
         </h1>
-        <p className="mt-3.5 text-[13px] leading-[1.85] text-muted">
+        {/* ch 는 이 요소의 글자 크기(13px)를 따르므로 제목 쪽 값보다 넉넉히 준다. */}
+        <p className="mt-3.5 max-w-[46ch] text-[13px] leading-[1.85] text-muted">
           같은 기술을 쓴 프로젝트끼리 이어져 있습니다. 노드를 끌어 흩어보고, 아래에서 기술을 골라
           걸러보세요. 프로젝트를 누르면 자세히 나옵니다.
         </p>
@@ -294,12 +303,13 @@ export function Graph() {
             key={tag}
             type="button"
             onClick={() => setFilter((f) => (f === tag ? null : tag))}
-            className={`rounded-full border px-3 py-1.5 font-mono text-[10.5px] tracking-[0.06em] backdrop-blur-md transition ${
+            className={`flex items-center gap-1.5 rounded-full border py-1.5 pr-3 pl-2.5 font-mono text-[10.5px] tracking-[0.06em] backdrop-blur-md transition ${
               filter === tag
                 ? 'border-bright bg-bright text-void'
                 : 'border-edge bg-glass text-muted hover:border-white/35 hover:text-bright'
             }`}
           >
+            <TechIcon tag={tag} className="size-3.5 shrink-0" />
             {tag} <span className="opacity-55">{count}</span>
           </button>
         ))}
@@ -370,7 +380,7 @@ function Detail({
         </span>
       </p>
 
-      <h2 className="mt-2.5 font-display text-[26px] leading-[1.14] font-extrabold tracking-[-0.03em]">
+      <h2 className="mt-2.5 font-display text-[27px] leading-[1.1] font-bold tracking-[-0.035em]">
         {project.name}
       </h2>
       <p className="mt-1.5 text-[13.5px] text-muted">{project.tagline}</p>
@@ -487,18 +497,18 @@ function draw(
   size: { w: number; h: number },
   nodes: Node[],
   links: { a: Node; b: Node }[],
-  hover: Node | null,
 ) {
   ctx.clearRect(0, 0, size.w, size.h);
 
-  // 선. 프로젝트 쪽 색을 따라가고, 호버한 노드에 붙은 것만 밝아진다.
+  // 선. 프로젝트 쪽 색을 따라간다. 밝아지는 기준은 노드의 hot 하나로 모았다 —
+  // hot 은 호버·드래그·선택을 모두 담으므로, 상세를 열어두면 그 프로젝트의 선이 계속 살아 있다.
   links.forEach((l) => {
-    const near = hover && (l.a === hover || l.b === hover);
+    const live = Math.max(l.a.hot, l.b.hot);
     const dim = Math.max(l.a.dim, l.b.dim);
     const base = l.a.kind === 'p' && l.a.project.group === 'game' ? C.game : C.tool;
-    ctx.globalAlpha = (near ? 0.9 : 0.26) * (1 - dim * 0.88);
-    ctx.strokeStyle = near ? C.bright : base;
-    ctx.lineWidth = near ? 1.8 : 1;
+    ctx.globalAlpha = (0.3 + live * 0.62) * (1 - dim * 0.88);
+    ctx.strokeStyle = live > 0.5 ? C.bright : base;
+    ctx.lineWidth = 1 + live * 0.9;
     ctx.beginPath();
     ctx.moveTo(l.a.x, l.a.y);
     ctx.lineTo(l.b.x, l.b.y);
@@ -520,6 +530,10 @@ function draw(
       ctx.arc(n.x, n.y, r, 0, 7);
       ctx.fill();
       ctx.stroke();
+
+      // 공유 2개짜리 노드(r≈14)에서도 글리프가 읽히게 아래를 받쳐둔다. 상자 대각선이
+      // 원을 넘지 않는 한계가 r×1.41 이라 그 안에서 크게 잡는다.
+      drawGlyph(ctx, n.tag, n.x, n.y, Math.max(16, r * 1.15), n.hot);
 
       ctx.fillStyle = n.hot > 0.4 ? C.bright : C.muted;
       ctx.font = '500 11px "IBM Plex Mono", ui-monospace, monospace';
@@ -562,7 +576,7 @@ function draw(
       }
 
       ctx.fillStyle = n.hot > 0.4 ? C.bright : C.muted;
-      ctx.font = `${n.hot > 0.4 ? 700 : 600} 12px Archivo, Pretendard, sans-serif`;
+      ctx.font = `${n.hot > 0.4 ? 700 : 500} 12px "Space Grotesk", Pretendard, sans-serif`;
       ctx.textAlign = 'center';
       const label =
         n.project.name.length > 20 ? n.project.name.slice(0, 19) + '…' : n.project.name;
@@ -570,6 +584,54 @@ function draw(
     }
   });
   ctx.globalAlpha = 1;
+}
+
+/* Path2D 는 필터 칩과 같은 path 문자열을 그대로 먹는다. 태그마다 한 번만 만들어 들고 있는다 —
+   매 프레임 새로 만들면 노드 열 개 × 60fps 만큼 버려진다.
+   Path2D 는 브라우저에만 있으므로 만드는 시점이 draw 안이어야 한다(이 파일도 서버에서 한 번 렌더된다). */
+const GLYPHS = new Map<TechTag, { path: Path2D; rotate?: number; fill?: boolean }[]>();
+
+function glyphOf(tag: TechTag) {
+  let made = GLYPHS.get(tag);
+  if (!made) {
+    made = TECH_ICONS[tag].map((g) => ({ path: new Path2D(g.d), rotate: g.rotate, fill: g.fill }));
+    GLYPHS.set(tag, made);
+  }
+  return made;
+}
+
+/** 24 상자에 그린 글리프를 (x, y) 중심에 size 크기로 얹는다. */
+function drawGlyph(
+  ctx: CanvasRenderingContext2D,
+  tag: TechTag,
+  x: number,
+  y: number,
+  size: number,
+  hot: number,
+) {
+  const s = size / GLYPH_BOX;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(s, s);
+  ctx.translate(-GLYPH_BOX / 2, -GLYPH_BOX / 2);
+  ctx.strokeStyle = hot > 0.4 ? C.bright : 'rgba(255,255,255,.6)';
+  ctx.fillStyle = ctx.strokeStyle;
+  // 글리프 좌표계 안의 굵기다. 작은 노드에서 1.9 × 0.66 ≈ 1.3px 로 얇아진다.
+  ctx.lineWidth = 1.9;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  glyphOf(tag).forEach((g) => {
+    if (g.rotate) {
+      ctx.save();
+      ctx.translate(12, 12);
+      ctx.rotate((g.rotate * Math.PI) / 180);
+      ctx.translate(-12, -12);
+    }
+    if (g.fill) ctx.fill(g.path);
+    else ctx.stroke(g.path);
+    if (g.rotate) ctx.restore();
+  });
+  ctx.restore();
 }
 
 /** #rrggbb + 알파 → rgba(). 캔버스 그라디언트는 투명도를 따로 못 준다. */

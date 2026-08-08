@@ -1,11 +1,23 @@
 import type { Metadata } from 'next';
-import { Archivo, IBM_Plex_Mono } from 'next/font/google';
+import { Gothic_A1, IBM_Plex_Mono, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 
-const archivo = Archivo({
-  variable: '--font-archivo',
+/* 제목용 라틴. Archivo 는 반듯해서 조용했다. Space Grotesk 는 잘린 획과 각진 곡선이
+   같은 크기에서도 더 움직인다. 가변축이 300~700 이라 900 을 줘도 700 에서 멈춘다. */
+const spaceGrotesk = Space_Grotesk({
+  variable: '--font-space',
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+});
+
+/* 제목용 한글. 제목이 한글이라 라틴만 바꾸면 화면은 그대로다. 본문은 Pretendard 로 두고
+   제목만 Gothic A1 900 으로 각을 세운다. */
+const gothicA1 = Gothic_A1({
+  variable: '--font-gothic',
+  // next/font 의 Gothic A1 메타에는 'korean' 서브셋이 없다. 그래도 구글이 돌려주는 CSS 에는
+  // 한글 unicode-range 청크가 함께 들어오고, 브라우저는 필요한 청크만 받는다.
+  subsets: ['latin'],
+  weight: ['700', '900'],
   display: 'swap',
 });
 
@@ -50,7 +62,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
       </head>
-      <body className={`${archivo.variable} ${plexMono.variable}`}>{children}</body>
+      <body className={`${spaceGrotesk.variable} ${gothicA1.variable} ${plexMono.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }
