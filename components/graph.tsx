@@ -11,6 +11,10 @@ import { BrandMark } from '@/components/brand-mark';
 const C = {
   game: '#ff7a52',
   tool: '#5b9bff',
+  /* 셋 다 중간 채널이 0x7a 대라 나란히 놓아도 한 벌로 읽힌다. 색상환에서 파랑 반대편에
+     둔 이유는 도구가 여섯 개로 가장 큰 무리라서다 — 가장 큰 무리와 헷갈리는 쪽이
+     제일 손해다. 주황(게임 넷)과는 60° 밖에 안 떨어지지만 밝기와 채도가 갈라준다. */
+  art: '#e07ac9',
   tech: '#8f9ac4',
   bright: '#eef1f8',
   muted: '#9aa2bb',
@@ -44,6 +48,13 @@ const STATUS: Record<Project['status'], { label: string; color: string }> = {
   live: { label: '운영 중', color: '#5be49b' },
   building: { label: '준비 중', color: '#ffc14d' },
   ended: { label: '서비스 종료', color: '#ff7a7a' },
+};
+
+/** 분류별 색·표기. 둘일 때는 삼항으로 갈랐는데, 셋이 되니 늘 하나가 조용히 빠졌다. */
+const GROUP: Record<Project['group'], { label: string; badge: string; color: string }> = {
+  game: { label: '게임', badge: 'GAME', color: C.game },
+  tool: { label: '도구', badge: 'TOOL', color: C.tool },
+  art: { label: '작품', badge: 'ART', color: C.art },
 };
 
 export function Graph() {
@@ -324,12 +335,7 @@ export function Graph() {
             아니므로 세는 칸으로만 두고 누르지 않는다 — 걸 것이 왼쪽에 이미 열 개 있다.
             머리말이 pointer-events-none 이라 여기만 다시 켠다. */}
         <div className="pointer-events-auto flex flex-wrap justify-end gap-1.5">
-          {(
-            [
-              { key: 'game', label: '게임', count: COUNTS.game, color: C.game },
-              { key: 'tool', label: '도구', count: COUNTS.tool, color: C.tool },
-            ] as const
-          ).map(({ key, label, count, color }) => (
+          {(Object.keys(GROUP) as Project['group'][]).map((key) => (
             <button
               key={key}
               type="button"
@@ -341,8 +347,11 @@ export function Graph() {
                   : 'border-edge bg-glass text-muted hover:border-white/35 hover:text-bright'
               }`}
             >
-              <i className="size-2 shrink-0 rounded-full" style={{ background: color }} />
-              {label} <span className="opacity-55">{count}</span>
+              <i
+                className="size-2 shrink-0 rounded-full"
+                style={{ background: GROUP[key].color }}
+              />
+              {GROUP[key].label} <span className="opacity-55">{COUNTS[key]}</span>
             </button>
           ))}
           <p className="flex items-center gap-1.5 rounded-full border border-transparent py-1.5 pr-3 pl-2.5 font-mono text-[10.5px] tracking-[0.06em] text-faint">
@@ -446,7 +455,7 @@ function Detail({
       <p className="mt-5 flex items-center gap-2.5 font-mono text-[10px] tracking-[0.2em] text-faint">
         {project.kind}
         <span className="text-white/15">/</span>
-        {project.group === 'game' ? 'GAME' : 'TOOL'}
+        {GROUP[project.group].badge}
         <span className="ml-auto flex items-center gap-1.5" style={{ color: status.color }}>
           <i className="inline-block size-1.5 rounded-full" style={{ background: status.color }} />
           {status.label}
@@ -578,7 +587,7 @@ function draw(
   links.forEach((l) => {
     const live = Math.max(l.a.hot, l.b.hot);
     const dim = Math.max(l.a.dim, l.b.dim);
-    const base = l.a.kind === 'p' && l.a.project.group === 'game' ? C.game : C.tool;
+    const base = l.a.kind === 'p' ? GROUP[l.a.project.group].color : C.tool;
     ctx.globalAlpha = (0.3 + live * 0.62) * (1 - dim * 0.88);
     ctx.strokeStyle = live > 0.5 ? C.bright : base;
     ctx.lineWidth = 1 + live * 0.9;
@@ -633,7 +642,7 @@ function draw(
     } else {
       // 발광 — 어두운 바탕에서 노드를 띄운다
       const glow = ctx.createRadialGradient(x, y, r * 0.7, x, y, r * 2.2);
-      const tint = n.project.group === 'game' ? C.game : C.tool;
+      const tint = GROUP[n.project.group].color;
       glow.addColorStop(0, hexA(tint, 0.34 * (0.4 + n.hot * 0.6)));
       glow.addColorStop(1, hexA(tint, 0));
       ctx.fillStyle = glow;

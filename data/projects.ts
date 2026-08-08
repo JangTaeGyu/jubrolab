@@ -23,7 +23,11 @@ export type Project = {
   name: string;
   /** 분류. 모노 대문자로 조판된다. */
   kind: string;
-  group: 'game' | 'tool';
+  /**
+   * 관계도의 색과 분류 필터를 가른다. 게임도 도구도 아닌 것(보기만 하는 것)이 생겨
+   * art 를 늘렸다 — 도구로 밀어넣으면 "쓰는 것" 여섯 개 사이에 섞여 읽히지 않는다.
+   */
+  group: 'game' | 'tool' | 'art';
   /** 한 줄 요약. 짧을수록 좋다. */
   tagline: string;
   /** 무엇인지. 두세 문장. */
@@ -53,7 +57,7 @@ export const PROJECTS: Project[] = [
     group: 'tool',
     tagline: '토큰 15종을 한 화면에서',
     blurb:
-      'UUID v1·v4·v7, Hex, Base64, API Key, JWT 스타일 Bearer, OTP까지 15종을 카테고리로 걸러 만들고 한 번에 복사합니다. 열 개 중 가장 작지만 가장 자주 쓰는 것입니다.',
+      'UUID v1·v4·v7, Hex, Base64, API Key, JWT 스타일 Bearer, OTP까지 15종을 카테고리로 걸러 만들고 한 번에 복사합니다. 열한 개 중 가장 작지만 가장 자주 쓰는 것입니다.',
     story:
       '토큰이 필요할 때마다 검색해서 아무 사이트에나 들어가던 게 싫어서 만들었습니다. 그래서 목표가 하나였습니다 — 열면 이미 만들어져 있고, Enter로 새로 뽑고, Ctrl+C로 복사하고 끝. 비행기에서도 열리도록 PWA로 감쌌습니다.',
     notes: [
@@ -266,7 +270,7 @@ export const PROJECTS: Project[] = [
       '컴포넌트 카탈로그가 프레임워크를 모른다 — 렌더 타깃을 갈아 끼울 수 있다',
       'LLM 키는 서버 프록시 뒤에 숨긴다. Gemini·DeepSeek·Anthropic·OpenAI·Ollama 를 갈아 쓴다',
       'API Flow — 등록한 API 를 묶거나 파이프라인으로 이어 캔버스에서 시연한다',
-      '열 개 중 가장 오래 붙잡고 있는 것. 모노레포 9패키지',
+      '열한 개 중 가장 오래 붙잡고 있는 것. 모노레포 9패키지',
     ],
     tech: ['Next.js', 'React', 'TypeScript', 'Vite', 'Tailwind', 'Supabase', 'LLM'],
     stack: [
@@ -340,6 +344,36 @@ export const PROJECTS: Project[] = [
     status: 'live',
     url: 'https://paperdoll.jubrolab.dev/',
   },
+  {
+    id: 'impastile',
+    name: 'Impastile',
+    kind: 'GALLERY',
+    group: 'art',
+    tagline: '원화가 그어진 방향으로 붓을 놓는다',
+    blurb:
+      '반 고흐 회화 6점을 셀 격자로 나눠, 셀마다 원화의 붓결 방향으로 회전한 스트로크를 놓아 다시 그립니다. 소용돌이치는 밤하늘은 소용돌이 접선을, 사이프러스는 수직 불꽃결을 따라 흐릅니다.',
+    story:
+      '모자이크는 색만 남기고 붓질을 버립니다. 그래서 색상 맵과 함께 붓결 방향장을 뽑았습니다 — 원화에 구조 텐서를 걸어 등고선 방향을 얻고, 그 각도로 회전한 길쭉한 사각형에 물감이 솟은 릿지를 얹습니다. 방향을 배각(2θ) 벡터로 저장한 것이 핵심입니다. 붓 스트로크는 180° 대칭이라 방향의 부호가 의미 없는데, 각도를 그대로 보간하면 0°와 179°가 90°로 섞여 스트로크가 뒤집힙니다.',
+    notes: [
+      '방향을 배각(2θ) 벡터로 저장한다. 각도를 그냥 섞으면 0°와 179°가 90°가 된다',
+      '번들에 든 원화 데이터는 최대 변 144px 색상 맵과 방향장뿐 — 외부 이미지 요청이 없다',
+      '시간을 프레임 수가 아니라 dt 로 센다. 탭이 가려져 rAF 가 늦어져도, 120Hz 에서도 속도가 같다',
+      '공유 카드는 같은 렌더 규칙을 SVG 로 한 번 구운 것이다. 화면과 다른 그림이 나가지 않는다',
+      '원화는 Wikimedia Commons 의 퍼블릭 도메인 스캔. 뽑아낸 것은 저해상도 색상 맵과 방향장이다',
+    ],
+    tech: ['Next.js', 'React', 'TypeScript', 'Canvas'],
+    stack: [
+      { area: '프레임워크', items: ['Next.js 16 (App Router)', 'React 19', 'TypeScript'] },
+      { area: '스타일', items: ['전역 CSS 한 장'] },
+      { area: '그리기', items: ['Canvas 2D', '구조 텐서 방향장', 'SVG (서버 렌더)'] },
+      { area: '데이터 추출', items: ['Python', 'Pillow', 'numpy'] },
+      { area: '부가', items: ['next/og (공유 카드)', 'Noto Sans KR 서브셋'] },
+    ],
+    og: '/og/impastile.png',
+    icon: '/icons/impastile.png',
+    status: 'live',
+    url: 'https://impastile.jubrolab.dev/',
+  },
 ];
 
 /** 둘 이상이 나눠 쓴 태그만. 하나만 쓴 것은 관계를 만들지 못한다. */
@@ -359,6 +393,7 @@ export const COUNTS = {
   ended: PROJECTS.filter((p) => p.status === 'ended').length,
   game: PROJECTS.filter((p) => p.group === 'game').length,
   tool: PROJECTS.filter((p) => p.group === 'tool').length,
+  art: PROJECTS.filter((p) => p.group === 'art').length,
   links: PROJECTS.reduce(
     (sum, p) => sum + p.tech.filter((t) => SHARED_TECH.some((s) => s.tag === t)).length,
     0,

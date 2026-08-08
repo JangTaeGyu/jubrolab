@@ -23,8 +23,9 @@ const DEEP = '#0b1020';
 const BRIGHT = '#eef1f8';
 const MUTED = '#9aa2bb';
 const FAINT = '#626b85';
-const GAME = '#ff7a52';
-const TOOL = '#5b9bff';
+/* graph.tsx 의 C · globals.css 의 --color-* 와 같은 값이다. 셋이 어긋나면 카드와
+   화면의 같은 프로젝트가 다른 색으로 나온다. */
+const GROUP_COLOR = { game: '#ff7a52', tool: '#5b9bff', art: '#e07ac9' };
 
 /* ── 파비콘 ─────────────────────────────────────────────
    가운데 큰 노드에 작은 노드 둘이 이어진 모양. 32 단위 격자에 그린다.
@@ -86,8 +87,7 @@ const edges = PROJECTS.flatMap((p, i) =>
 
 const total = pad(PROJECTS.length);
 const live = pad(PROJECTS.filter((p) => p.status === 'live').length);
-const games = pad(PROJECTS.filter((p) => p.group === 'game').length);
-const tools = pad(PROJECTS.filter((p) => p.group === 'tool').length);
+const byGroup = (g) => pad(PROJECTS.filter((p) => p.group === g).length);
 
 
 /** 육각 벌집 타일. 사이트 배경(globals.css)과 같은 기하다.
@@ -158,7 +158,7 @@ const board = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}
         (e) =>
           `<path d="M${e.from.x.toFixed(1)} ${e.from.y.toFixed(1)} L${e.to.x.toFixed(1)} ${e.to.y.toFixed(
             1,
-          )}" stroke="${e.group === 'game' ? GAME : TOOL}" stroke-opacity="0.32"/>`,
+          )}" stroke="${GROUP_COLOR[e.group]}" stroke-opacity="0.32"/>`,
       )
       .join('')}
   </g>
@@ -187,16 +187,19 @@ const board = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}
         fill="${MUTED}">AI · 교육 · 게임 · 개발자 도구 — 사이드 프로젝트 ${PROJECTS.length}개</text>
 
   <!-- 수치. 구분자를 본문보다 옅게 두면 이 크기에서는 사라져 단어가 붙어 보인다. -->
-  <!-- 오른쪽 관계도에 물리지 않게 글자 폭을 좁게 잡는다. -->
+  <!-- 오른쪽 관계도에 물리지 않게 글자 폭을 좁게 잡는다. 분류가 셋이 된 뒤로 여기에
+       GAMES·TOOLS·ART 를 다 적으면 관계도를 파고들어, 분류별 수는 아래 범례로 내렸다.
+       색 점이 붙는 자리라 그쪽이 노드 색과 이어져 읽히기도 한다. -->
   <text x="64" y="398" font-family="ui-monospace, Menlo, monospace" font-size="14"
         letter-spacing="1.7" fill="${FAINT}"
-        >PROJECTS&#160;${total}&#160;&#160;·&#160;&#160;LIVE&#160;${live}&#160;&#160;·&#160;&#160;GAMES&#160;${games}&#160;&#160;·&#160;&#160;TOOLS&#160;${tools}</text>
+        >PROJECTS&#160;${total}&#160;&#160;·&#160;&#160;LIVE&#160;${live}&#160;&#160;·&#160;&#160;LINKS&#160;${pad(edges.length)}</text>
 
   <!-- 범례 -->
   <g font-family="ui-monospace, Menlo, monospace" font-size="14" letter-spacing="1.6" fill="${FAINT}">
-    <circle cx="70" cy="474" r="5" fill="${GAME}"/><text x="86" y="479">게임</text>
-    <circle cx="152" cy="474" r="5" fill="${TOOL}"/><text x="168" y="479">도구</text>
-    <circle cx="234" cy="474" r="5" fill="#ffffff" fill-opacity="0.24"/><text x="250" y="479">공유 기술 ${shared.length}</text>
+    <circle cx="70" cy="474" r="5" fill="${GROUP_COLOR.game}"/><text x="86" y="479">게임 ${byGroup('game')}</text>
+    <circle cx="166" cy="474" r="5" fill="${GROUP_COLOR.tool}"/><text x="182" y="479">도구 ${byGroup('tool')}</text>
+    <circle cx="262" cy="474" r="5" fill="${GROUP_COLOR.art}"/><text x="278" y="479">작품 ${byGroup('art')}</text>
+    <circle cx="358" cy="474" r="5" fill="#ffffff" fill-opacity="0.24"/><text x="374" y="479">공유 기술 ${shared.length}</text>
   </g>
 </svg>`;
 
@@ -224,7 +227,7 @@ const rings = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}
   ${PROJECTS.map((p, i) => {
     const { x, y } = projectAt(i);
     return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${ICON_SIZE / 2 + 3}"
-      fill="none" stroke="${p.group === 'game' ? GAME : TOOL}" stroke-width="2.4"/>`;
+      fill="none" stroke="${GROUP_COLOR[p.group]}" stroke-width="2.4"/>`;
   }).join('')}
 </svg>`;
 

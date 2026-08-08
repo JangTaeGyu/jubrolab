@@ -41,3 +41,11 @@
 
 - https://story-hacker.jubrolab.dev/
 - /Users/jangtaegyu/Desktop/ToyProject/story-hacker
+
+## Impastile
+
+- https://impastile.jubrolab.dev/
+- /Users/jangtaegyu/Desktop/ToyProject/impastile
+  - OG 카드가 저장소에 파일로 없다 — `app/opengraph-image.tsx` 가 빌드 때 굽는다.
+    그래서 배포본에서 받아 온다: `curl -o public/og/impastile.png
+    https://impastile.jubrolab.dev/opengraph-image`

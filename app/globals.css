@@ -2,7 +2,7 @@
 
 @theme {
   /* 딥 네이비 — 관계도는 선이 주역이라 어두운 바탕에서 가장 읽힌다.
-     아이콘 10개가 이미 모든 색을 가지고 있으니 바탕은 무채색으로 물러선다. */
+     아이콘 11개가 이미 모든 색을 가지고 있으니 바탕은 무채색으로 물러선다. */
   --color-void: #080b16;
   --color-deep: #0b1020;
   --color-mid: #141a2e;
@@ -18,6 +18,7 @@
 
   --color-game: #ff7a52;
   --color-tool: #5b9bff;
+  --color-art: #e07ac9;
 
   /* 라틴은 Space Grotesk, 한글은 Gothic A1 이 받는다 — Space Grotesk 에 한글이 없으니
      순서만으로 갈린다. 본문은 읽는 글이라 Pretendard 를 그대로 둔다. */
