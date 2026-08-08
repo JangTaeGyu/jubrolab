@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 3 — 배포 현황판 / Departure Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+<style>
+:root{
+  --hall:#0E0F12;
+  --board:#17181D;
+  --board-2:#1E2027;
+  --flap:#26282F;
+  --seam:#0B0C0F;
+  --amber:#FFB020;
+  --amber-dim:#8A6320;
+  --white:#E8E6E1;
+  --gray:#787D88;
+  --green:#43D17C;
+  --red:#FF5B45;
+  --cond:"Barlow Condensed",Pretendard,sans-serif;
+  --mono:"Roboto Mono",ui-monospace,monospace;
+  --body:Pretendard,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--hall);color:var(--white);font-family:var(--body);
+  background-image:radial-gradient(ellipse 120% 60% at 50% -10%,rgba(255,176,32,.07),transparent 70%);}
+::selection{background:var(--amber);color:#111}
+.hall{max-width:1240px;margin:0 auto;padding:34px 24px 80px}
+
+/* ── 안내 헤더 ─────────────────────────── */
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+  border-bottom:1px solid #2A2C33;padding-bottom:16px}
+.brand{font-family:var(--cond);font-weight:700;font-size:30px;letter-spacing:.06em;text-transform:uppercase}
+.brand span{color:var(--amber)}
+.clock{font-family:var(--mono);font-size:13px;color:var(--gray);letter-spacing:.1em;text-align:right}
+.clock b{display:block;color:var(--amber);font-size:26px;font-weight:500;letter-spacing:.04em}
+
+h1{font-family:var(--cond);font-weight:600;text-transform:uppercase;letter-spacing:.1em;
+  font-size:clamp(28px,5vw,52px);margin:36px 0 6px;color:var(--white)}
+.sub{color:var(--gray);margin:0 0 28px;font-size:15px;max-width:56ch}
+
+/* ── 보드 ─────────────────────────────── */
+.board{
+  background:var(--board);border:1px solid #2A2C33;border-radius:3px;overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 30px 60px -30px #000;
+}
+.thead,.row{
+  display:grid;grid-template-columns:92px minmax(0,1.3fr) 148px minmax(0,1fr) 200px 104px;
+  gap:16px;align-items:center;padding:0 20px;
+}
+.thead{
+  height:38px;background:var(--board-2);border-bottom:1px solid var(--seam);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--gray);text-transform:uppercase;
+}
+.row{
+  height:66px;border-bottom:1px solid var(--seam);position:relative;
+  text-decoration:none;color:inherit;transition:background .14s;
+}
+.row:hover{background:#1C1E25}
+.row:last-child{border-bottom:0}
+
+.time{font-family:var(--mono);font-size:15px;color:var(--amber-dim);letter-spacing:.06em}
+
+/* 스플릿플랩 글자 */
+.flap{display:flex;gap:2px;flex-wrap:wrap}
+.ch{
+  display:inline-block;background:var(--flap);color:var(--amber);
+  font-family:var(--mono);font-weight:700;font-size:17px;line-height:26px;
+  width:16px;height:26px;text-align:center;border-radius:2px;
+  box-shadow:inset 0 -1px 0 rgba(0,0,0,.5);
+  position:relative;overflow:hidden;
+}
+.ch::after{content:"";position:absolute;left:0;right:0;top:13px;height:1px;background:rgba(0,0,0,.45)}
+.ch.sp{background:transparent;box-shadow:none;width:7px}
+.ch.sp::after{display:none}
+.row.flip .ch{animation:flip .34s cubic-bezier(.3,.9,.4,1) both}
+@keyframes flip{
+  0%{transform:rotateX(-90deg);opacity:0}
+  60%{transform:rotateX(12deg);opacity:1}
+  100%{transform:rotateX(0);opacity:1}
+}
+
+.kind{font-family:var(--cond);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--white)}
+.kind.tool{color:#7EC8FF}
+.kind.game{color:#FFD48A}
+.note{color:var(--gray);font-size:13.5px;line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.gate{font-family:var(--mono);font-size:12.5px;color:var(--gray);letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row:hover .gate{color:var(--white)}
+
+.st{font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.14em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:7px;justify-self:end}
+.st .lamp{width:8px;height:8px;border-radius:50%;box-shadow:0 0 8px currentColor}
+.st.live{color:var(--green)}.st.live .lamp{background:var(--green);animation:blink 2.4s ease-in-out infinite}
+.st.wip{color:var(--red)}.st.wip .lamp{background:var(--red);animation:blink .9s steps(1) infinite}
+@keyframes blink{50%{opacity:.25}}
+
+/* ── 하단 요약 ────────────────────────── */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#2A2C33;margin-top:28px;border:1px solid #2A2C33}
+.summary div{background:var(--board);padding:18px 20px}
+.summary dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--gray);text-transform:uppercase;margin:0}
+.summary dd{margin:6px 0 0;font-family:var(--cond);font-weight:700;font-size:32px;letter-spacing:.02em;color:var(--amber)}
+.summary dd small{font-size:14px;color:var(--gray);font-weight:500;margin-left:6px}
+
+footer{margin-top:44px;font-family:var(--mono);font-size:11.5px;color:var(--gray);letter-spacing:.08em;
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media(max-width:1000px){
+  .thead{display:none}
+  .row{grid-template-columns:1fr auto;grid-template-areas:"flap st" "kind kind" "note note" "gate gate";
+    height:auto;padding:18px 16px;gap:6px 12px;align-items:start}
+  .time{display:none}
+  .flap{grid-area:flap}.st{grid-area:st;justify-self:end}
+  .kind{grid-area:kind}.note{grid-area:note;-webkit-line-clamp:3}.gate{grid-area:gate;margin-top:4px}
+  .summary{grid-template-columns:1fr 1fr}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
+</style>
+</head>
+<body>
+<div class="hall">
+
+  <div class="head">
+    <div class="brand">JUBRO<span>LAB</span> · 배포 현황</div>
+    <div class="clock"><b id="now">--:--</b>KST · 실시간</div>
+  </div>
+
+  <h1>Deployments</h1>
+  <p class="sub">혼자 만들어 올린 것들. 초록 램프는 지금 열 수 있고, 빨간 램프는 아직 만드는 중입니다.</p>
+
+  <div class="board">
+    <div class="thead">
+      <div>시작</div><div>서비스</div><div>유형</div><div>내용</div><div>주소</div><div style="justify-self:end">상태</div>
+    </div>
+    <div id="rows"></div>
+  </div>
+
+  <dl class="summary">
+    <div><dt>전체</dt><dd>08<small>프로젝트</small></dd></div>
+    <div><dt>운영 중</dt><dd>06<small>서비스</small></dd></div>
+    <div><dt>게임 / 도구</dt><dd>04<small>&nbsp;/&nbsp;</small>04</dd></div>
+    <div><dt>엔진</dt><dd>02<small>Phaser 3·4</small></dd></div>
+  </dl>
+
+  <footer><span>jubrolab.dev</span><span>모든 서비스는 서브도메인 하나씩</span></footer>
+</div>
+
+<script>
+const ROWS=[
+ {t:"2024.03",name:"TOKEN GENERATOR",kind:"도구 / 유틸리티",k:"tool",
+  note:"UUID·Hex·Base64·API Key·Bearer·OTP 15종을 한 화면에서 만들고 한 번에 복사한다.",
+  gate:"token-generator.jubrolab.dev",live:1},
+ {t:"2024.07",name:"TEXT2VISUAL",kind:"도구 / 생성 아트",k:"tool",
+  note:"같은 문장은 언제나 같은 그림이 된다. 화풍 8가지, SHA-256 인증서, 이미지 2FA.",
+  gate:"text2visual.jubrolab.dev",live:1},
+ {t:"2024.11",name:"STORY HACKER",kind:"게임 / 추리 퍼즐",k:"game",
+  note:"이야기 속 단서로 비밀번호를 맞힌다. 스토리 10편, 논리만 쓰는 추론 8편.",
+  gate:"story-hacker.jubrolab.dev",live:1},
+ {t:"2025.04",name:"PAPERDOLL",kind:"도구 / 스프라이트",k:"tool",
+  note:"레이어 파츠를 겹쳐 캐릭터를 만들고 상태별 스프라이트 시트를 zip으로 받는다.",
+  gate:"paperdoll.jubrolab.dev",live:1},
+ {t:"2025.09",name:"INK ARENA",kind:"게임 / 액션",k:"game",
+  note:"바닥을 잉크로 칠해 더 넓게 차지한 팀이 이긴다. 폰에서는 트윈스틱이 붙는다.",
+  gate:"ink-arena.jubrolab.dev",live:1},
+ {t:"2026.01",name:"VANGUARD",kind:"게임 / 실시간 전략",k:"game",
+  note:"A* 경로탐색, FSM 유닛 AI, 시야 안개, 봇. 맵 에디터가 따로 붙는다.",
+  gate:"vc-rts.jubrolab.dev · vc-editor.jubrolab.dev",live:1},
+ {t:"2026.05",name:"KIPLY",kind:"게임 / 어린이 학습",k:"game",
+  note:"6~12세를 위한 미니게임 7종. 프로필을 나눠 쓰고 학습 리포트를 남긴다.",
+  gate:"kiply.jubrolab.dev",live:0},
+ {t:"2026.07",name:"SPECAST",kind:"도구 / UI 빌더",k:"tool",
+  note:"JSON 스펙 하나를 진실로 삼는 화면 빌더. 자연어 생성·Figma 임포트·코드 내보내기.",
+  gate:"specast.jubrolab.dev",live:0},
+];
+
+const flap=s=>[...s].map(c=>c===' '?'<span class="ch sp"></span>':`<span class="ch">${c}</span>`).join('');
+
+document.getElementById('rows').innerHTML=ROWS.map((r,i)=>`
+  <a class="row" href="https://${r.gate.split(' · ')[0]}/" style="animation-delay:${i*70}ms">
+    <span class="time">${r.t}</span>
+    <span class="flap" style="--d:${i}">${flap(r.name)}</span>
+    <span class="kind ${r.k}">${r.kind}</span>
+    <span class="note">${r.note}</span>
+    <span class="gate">${r.gate}</span>
+    <span class="st ${r.live?'live':'wip'}"><i class="lamp"></i>${r.live?'운영 중':'준비 중'}</span>
+  </a>`).join('');
+
+// 행 단위로 순서대로 플랩을 넘긴다
+document.querySelectorAll('.row').forEach((row,i)=>{
+  row.querySelectorAll('.ch').forEach((ch,j)=>ch.style.animationDelay=(i*90+j*22)+'ms');
+  setTimeout(()=>row.classList.add('flip'),40);
+});
+
+const tick=()=>{const d=new Date();
+  document.getElementById('now').textContent=
+    String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+tick();setInterval(tick,10000);
+</script>
+</body>
+</html>

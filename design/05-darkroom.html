@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 5 — 암실 전시 / Darkroom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+<style>
+:root{
+  --room:#0A0A0D;
+  --room-2:#101014;
+  --wall:#17171C;
+  --hair:#2A2A32;
+  --light:#F2EFE9;
+  --dim:#8A8A96;
+  --dim-2:#5C5C68;
+  --brass:#C8A45C;
+  --disp:"Instrument Serif",Pretendard,serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --body:Pretendard,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--room);color:var(--light);font-family:var(--body);overflow-x:hidden}
+::selection{background:var(--brass);color:#0A0A0D}
+a{color:inherit}
+.room{max-width:1240px;margin:0 auto;padding:0 30px}
+
+/* ── 입구 ─────────────────────────────── */
+.entry{min-height:96vh;display:flex;flex-direction:column;justify-content:center;position:relative;padding:80px 0 60px}
+.plaque{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim-2);
+  display:flex;gap:20px;flex-wrap:wrap}
+.plaque b{color:var(--brass);font-weight:400}
+
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:56px;align-items:center;margin-top:34px}
+.hero-art{
+  position:relative;aspect-ratio:4/3;background:#000;
+  box-shadow:0 0 0 1px var(--hair),0 0 90px -10px rgba(200,164,92,.16),0 50px 90px -50px #000;
+}
+.hero-art canvas{width:100%;height:100%;display:block}
+.hero-art::after{ /* 조명 */
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 55% at 50% 34%,rgba(255,255,255,.09),transparent 72%);
+}
+.hero-txt h1{
+  font-family:var(--disp);font-weight:400;font-size:clamp(50px,7.5vw,92px);line-height:.96;
+  letter-spacing:-.015em;margin:0;
+}
+.hero-txt h1 em{font-style:italic;color:var(--brass)}
+.hero-txt p{color:var(--dim);font-size:16px;line-height:1.85;margin:24px 0 0;max-width:38ch}
+.hero-txt .sig{font-family:var(--mono);font-size:11px;color:var(--dim-2);letter-spacing:.14em;margin-top:28px;
+  padding-top:16px;border-top:1px solid var(--hair)}
+.scroll{position:absolute;bottom:34px;left:0;font-family:var(--mono);font-size:11px;color:var(--dim-2);letter-spacing:.2em}
+.scroll::after{content:" ↓";animation:bob 2.4s ease-in-out infinite;display:inline-block}
+@keyframes bob{50%{transform:translateY(5px)}}
+
+/* ── 전시 ─────────────────────────────── */
+.hall-title{border-top:1px solid var(--hair);padding:70px 0 40px;display:flex;justify-content:space-between;
+  align-items:baseline;gap:24px;flex-wrap:wrap}
+.hall-title h2{font-family:var(--disp);font-weight:400;font-size:40px;margin:0;letter-spacing:-.01em}
+.hall-title span{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--dim-2);text-transform:uppercase}
+
+.works{display:grid;grid-template-columns:repeat(2,1fr);gap:70px 56px;padding-bottom:90px}
+.work{display:block;text-decoration:none}
+.frame{
+  position:relative;aspect-ratio:16/11;background:#000;overflow:hidden;
+  box-shadow:0 0 0 1px var(--hair),0 40px 70px -46px #000;transition:box-shadow .35s;
+}
+.frame canvas{width:100%;height:100%;display:block;transition:transform .7s cubic-bezier(.2,.7,.3,1),filter .5s;filter:saturate(.82) brightness(.86)}
+.work:hover .frame{box-shadow:0 0 0 1px #3B3B46,0 0 70px -18px rgba(200,164,92,.24),0 40px 70px -40px #000}
+.work:hover .frame canvas{transform:scale(1.05);filter:saturate(1.1) brightness(1)}
+.frame .glass{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.08),transparent 42%)}
+
+/* 벽 라벨 */
+.label{margin-top:20px;display:grid;grid-template-columns:1fr auto;gap:6px 18px;align-items:baseline;
+  border-top:1px solid var(--hair);padding-top:14px}
+.label h3{font-family:var(--disp);font-weight:400;font-size:29px;margin:0;letter-spacing:-.01em;line-height:1.15}
+.label .yr{font-family:var(--mono);font-size:11px;color:var(--dim-2);letter-spacing:.14em;white-space:nowrap}
+.label .medium{grid-column:1/-1;font-family:var(--mono);font-size:11.5px;color:var(--brass);letter-spacing:.06em;margin:2px 0 0}
+.label .txt{grid-column:1/-1;color:var(--dim);font-size:14px;line-height:1.8;margin:12px 0 0;max-width:46ch}
+.label .foot{grid-column:1/-1;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:11px;color:var(--dim-2);margin-top:14px;letter-spacing:.04em}
+.label .foot .st{color:var(--dim)}
+.label .foot .st.off{color:var(--brass)}
+.work:hover .label h3{color:var(--brass)}
+.label h3{transition:color .3s}
+
+footer{border-top:1px solid var(--hair);padding:44px 0 80px;display:flex;justify-content:space-between;
+  gap:20px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--dim-2);letter-spacing:.12em}
+
+@media(max-width:960px){
+  .hero{grid-template-columns:1fr;gap:34px}
+  .works{grid-template-columns:1fr;gap:56px}
+  .room{padding:0 20px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:focus-visible{outline:2px solid var(--brass);outline-offset:6px}
+</style>
+</head>
+<body>
+<div class="room">
+
+  <section class="entry">
+    <div class="plaque">
+      <span>JUBRO LAB</span><span>개인 상설전</span><span>출품 <b>08</b></span><span>운영 중 <b>06</b></span>
+    </div>
+    <div class="hero">
+      <div class="hero-art"><canvas id="heroC" width="1200" height="900"></canvas></div>
+      <div class="hero-txt">
+        <h1>혼자 만든<br><em>여덟 가지</em></h1>
+        <p>게임 엔진을 붙여본 것, 쓰려고 짠 도구, 아직 끝나지 않은 것. 각 작품의 그림은 이름을 해시로 돌려 만든 것이라, 이름이 같으면 언제나 같은 그림이 나옵니다.</p>
+        <p class="sig">JUBROLAB.DEV · 2024 — 2026</p>
+      </div>
+    </div>
+    <span class="scroll">전시장으로</span>
+  </section>
+
+  <div class="hall-title">
+    <h2>출품작</h2>
+    <span>Games 04 · Tools 04</span>
+  </div>
+
+  <section class="works" id="works"></section>
+
+  <footer><span>JUBROLAB.DEV</span><span>모든 그림은 제목에서 생성됩니다</span></footer>
+</div>
+
+<script>
+/* ── 결정론적 생성기 ───────────────────────────── */
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){let a=seed||1;return()=>{a^=a<<13;a>>>=0;a^=a>>17;a^=a<<5;a>>>=0;return a/4294967296}}
+
+const PALETTES=[
+  ['#E8543F','#F2A65A','#2B2B33','#EDE7DA'],
+  ['#3A7BD5','#00D2C6','#101820','#E6EEF5'],
+  ['#C8A45C','#8C6B2F','#141310','#F0E6D2'],
+  ['#B4436C','#F1D6C4','#1A1020','#E9C46A'],
+  ['#4CAF7D','#A8E06A','#0F1A14','#E4F0DC'],
+  ['#7A5AF8','#22D3EE','#0C0A1A','#E8E4FF'],
+];
+
+function paint(cv,seed,mode){
+  const r=rng(seed),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const pal=PALETTES[seed%PALETTES.length];
+  ctx.fillStyle=pal[2];ctx.fillRect(0,0,W,H);
+
+  if(mode===0){ // 흐름장
+    for(let i=0;i<420;i++){
+      let x=r()*W,y=r()*H;
+      ctx.beginPath();ctx.moveTo(x,y);
+      ctx.strokeStyle=[pal[0],pal[1],pal[3]][i%3];
+      ctx.globalAlpha=.10+r()*.2;ctx.lineWidth=.6+r()*3.4;
+      for(let s=0;s<70;s++){
+        const a=Math.sin(x*.0035+seed%9)*2.2+Math.cos(y*.0032)*2.2;
+        x+=Math.cos(a)*9;y+=Math.sin(a)*9;ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+  } else if(mode===1){ // 판 분할
+    const cells=[[0,0,W,H]];
+    for(let i=0;i<44;i++){
+      const idx=Math.floor(r()*cells.length),c=cells.splice(idx,1)[0];
+      if(!c||c[2]<50||c[3]<50){cells.push(c);continue}
+      if(r()>.5){const p=c[2]*(.28+r()*.44);cells.push([c[0],c[1],p,c[3]],[c[0]+p,c[1],c[2]-p,c[3]])}
+      else{const p=c[3]*(.28+r()*.44);cells.push([c[0],c[1],c[2],p],[c[0],c[1]+p,c[2],c[3]-p])}
+    }
+    cells.forEach(c=>{
+      if(!c)return;
+      ctx.globalAlpha=1;ctx.fillStyle=r()>.7?pal[Math.floor(r()*2)]:pal[2];
+      ctx.fillRect(c[0],c[1],c[2],c[3]);
+      ctx.globalAlpha=.5;ctx.strokeStyle=pal[3];ctx.lineWidth=1.2;
+      ctx.strokeRect(c[0]+.5,c[1]+.5,c[2]-1,c[3]-1);
+      if(r()>.82){ctx.globalAlpha=.9;ctx.fillStyle=pal[3];
+        ctx.beginPath();ctx.arc(c[0]+c[2]/2,c[1]+c[3]/2,Math.min(c[2],c[3])*.22,0,7);ctx.fill()}
+    });
+  } else if(mode===2){ // 점묘 궤도
+    for(let i=0;i<5200;i++){
+      const t=r()*Math.PI*2,rad=(.12+r()*.42)*Math.min(W,H);
+      const wob=Math.sin(t*(3+seed%5))*rad*.28;
+      const x=W/2+Math.cos(t)*(rad+wob),y=H/2+Math.sin(t)*(rad+wob)*.78;
+      ctx.globalAlpha=.08+r()*.5;ctx.fillStyle=[pal[0],pal[1],pal[3]][i%3];
+      ctx.beginPath();ctx.arc(x,y,.6+r()*3.2,0,7);ctx.fill();
+    }
+  } else { // 지층
+    const bands=10+Math.floor(r()*10);
+    for(let i=0;i<bands;i++){
+      const y=H*i/bands;
+      ctx.globalAlpha=.9;ctx.fillStyle=r()>.55?pal[Math.floor(r()*2)]:pal[2];
+      ctx.beginPath();ctx.moveTo(0,y);
+      for(let x=0;x<=W;x+=W/16)ctx.lineTo(x,y+Math.sin(x*.006+i*1.7+seed%7)*H*.035);
+      ctx.lineTo(W,y+H/bands+30);ctx.lineTo(0,y+H/bands+30);ctx.closePath();ctx.fill();
+    }
+    ctx.globalAlpha=.6;ctx.strokeStyle=pal[3];ctx.lineWidth=1.4;
+    for(let i=0;i<9;i++){const y=r()*H;ctx.beginPath();ctx.moveTo(0,y);
+      for(let x=0;x<=W;x+=W/24)ctx.lineTo(x,y+Math.sin(x*.008+i)*H*.02);ctx.stroke()}
+  }
+  // 필름 그레인
+  ctx.globalAlpha=1;
+  const g=ctx.getImageData(0,0,W,H),d=g.data;
+  for(let i=0;i<d.length;i+=4){const n=(Math.random()-.5)*17;d[i]+=n;d[i+1]+=n;d[i+2]+=n}
+  ctx.putImageData(g,0,0);
+}
+
+/* ── 작품 ─────────────────────────────── */
+const W=[
+ {t:"Specast",yr:"2026",medium:"JSON 스펙 · React · NestJS",st:0,url:"https://specast.jubrolab.dev/",
+  txt:"화면을 그림이 아니라 스펙으로 다룹니다. 드래그로 짜고, 말로 시키고, Figma에서 가져오고, React 코드나 HTML5 임베드로 내보냅니다.",
+  side:"컴포넌트 51종 · 모노레포 9패키지"},
+ {t:"Chronicles of the Vanguard",yr:"2026",medium:"Phaser 3 · Next.js · zod",st:1,url:"https://vc-rts.jubrolab.dev/",
+  txt:"A* 경로탐색, FSM 유닛 AI, 셀 단위 시야 안개, 자원 채집, 상대할 봇. 맵과 유닛을 직접 만드는 에디터가 따로 붙습니다.",
+  side:"유닛 24종 · 앱 2개"},
+ {t:"INK ARENA",yr:"2025",medium:"Phaser 4 · TypeScript · Vite",st:1,url:"https://ink-arena.jubrolab.dev/",
+  txt:"바닥을 잉크로 칠해 더 넓게 차지한 팀이 이깁니다. 폰에서는 트윈스틱이 붙고 발사 버튼은 없앴습니다 — 엄지가 둘뿐이니까요.",
+  side:"웹 · 모바일 · PWA"},
+ {t:"Paperdoll",yr:"2025",medium:"Next.js · sharp · fflate",st:1,url:"https://paperdoll.jubrolab.dev/",
+  txt:"파츠를 겹쳐 캐릭터를 만들고, 레이어마다 색을 곱연산으로 입히고, 상태별 스프라이트 시트를 zip 하나로 받습니다.",
+  side:"13레이어 · 36파츠 · 42프레임"},
+ {t:"Story Hacker",yr:"2024",medium:"Next.js · React",st:1,url:"https://story-hacker.jubrolab.dev/",
+  txt:"이야기 속 단서를 읽고 비밀번호를 맞힙니다. 틀리면 벌 대신 새 단서가 열립니다. 스토리 10편, 논리만 쓰는 추론 8편.",
+  side:"에피소드 18편"},
+ {t:"Text2Visual",yr:"2024",medium:"Next.js · canvas · SHA-256",st:1,url:"https://text2visual.jubrolab.dev/",
+  txt:"같은 문장은 언제나 같은 그림이 됩니다. 화풍 8가지, 해시로 진위를 확인하는 인증서, 그림으로 하는 2차 인증까지.",
+  side:"화풍 8종"},
+ {t:"Kiply",yr:"2026",medium:"Next.js 14 · Zustand · PWA",st:0,url:"https://kiply.jubrolab.dev/",
+  txt:"6~12세를 위한 미니게임 7종. 풍선을 터뜨려 덧셈, 카드를 뒤집어 기억력, 두더지를 잡아 암산. 아이들 것이라 접근성을 지켰습니다.",
+  side:"게임 7종 · WCAG 준수"},
+ {t:"Token Generator",yr:"2024",medium:"Next.js 14 · CSS Modules",st:1,url:"https://token-generator.jubrolab.dev/",
+  txt:"UUID·Hex·Base64·API Key·Bearer·OTP까지 15종을 한 화면에서 만들고 한 번에 복사합니다. 가장 작고 가장 자주 씁니다.",
+  side:"토큰 15종"},
+];
+
+document.getElementById('works').innerHTML=W.map((w,i)=>`
+  <a class="work" href="${w.url}">
+    <div class="frame"><canvas width="880" height="605" data-seed="${w.t}"></canvas><span class="glass"></span></div>
+    <div class="label">
+      <h3>${w.t}</h3><span class="yr">${w.yr}</span>
+      <p class="medium">${w.medium}</p>
+      <p class="txt">${w.txt}</p>
+      <div class="foot"><span>${w.side}</span>
+        <span class="st ${w.st?'':'off'}">${w.st?'전시 중 · 열람 가능':'제작 중'}</span></div>
+    </div>
+  </a>`).join('');
+
+paint(document.getElementById('heroC'),hash('jubrolab'),0);
+document.querySelectorAll('.frame canvas').forEach((c,i)=>{
+  const h=hash(c.dataset.seed);paint(c,h,h%4);
+});
+</script>
+</body>
+</html>

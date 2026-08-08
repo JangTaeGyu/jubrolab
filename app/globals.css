@@ -1,0 +1,140 @@
+@import 'tailwindcss';
+
+@theme {
+  /* 흰 격자 위. 색은 프로젝트 OG 이미지가 전부 담당하고 바탕은 자리만 내준다. */
+  --color-paper: #fbfaf7;
+  --color-card: #ffffff;
+  --color-grid: #e6e3d8;
+  --color-grid-strong: #d3cebc;
+  --color-line: #e2dfd5;
+  --color-line-soft: #eeece4;
+
+  --color-ink: #15150f;
+  --color-muted: #67655c;
+  --color-faint: #9a978c;
+
+  --font-display: var(--font-archivo), 'Pretendard Variable', Pretendard, sans-serif;
+  --font-body: 'Pretendard Variable', Pretendard, var(--font-archivo), sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  background-color: var(--color-paper);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+/* 바탕 — 32px 잔격자 위에 160px 굵은 격자를 겹친다. */
+.wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--color-paper);
+  background-image:
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px),
+    linear-gradient(var(--color-grid-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid-strong) 1px, transparent 1px);
+  background-size:
+    32px 32px,
+    32px 32px,
+    160px 160px,
+    160px 160px;
+  background-position: center center;
+}
+
+/* 가장자리로 갈수록 격자를 옅게 해 가운데로 눈이 모이게 한다. */
+.wallpaper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 90% at 50% 42%, transparent 30%, rgba(251, 250, 247, 0.72) 100%);
+}
+
+/* 롤링 배너 — 같은 줄을 두 벌 이어붙이고 한 벌 폭만큼 밀어 이음매를 없앤다. */
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.marquee-track {
+  animation-name: marquee;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.marquee-track[data-paused='true'] {
+  animation-play-state: paused;
+}
+
+/* 양끝을 흐리게 잘라 카드가 화면 밖으로 사라지는 느낌을 준다. */
+.marquee-mask {
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+/* 모달 */
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.955);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.backdrop-in {
+  animation: backdrop-in 0.26s ease-out both;
+}
+
+.sheet-in {
+  animation: sheet-in 0.42s cubic-bezier(0.18, 0.85, 0.24, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .marquee-track {
+    animation: none;
+  }
+}

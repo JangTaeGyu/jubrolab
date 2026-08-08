@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>jubrolab — 디자인 시안 5</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0E0E11;color:#EDEDF0;font-family:Pretendard,sans-serif;line-height:1.7}
+.w{max-width:960px;margin:0 auto;padding:64px 26px 100px}
+h1{font-size:34px;margin:0 0 6px;letter-spacing:-.02em}
+.sub{color:#8A8A96;margin:0 0 42px;font-size:15px}
+.mono{font-family:"IBM Plex Mono",monospace}
+.card{display:block;text-decoration:none;color:inherit;border:1px solid #26262E;border-radius:12px;
+  padding:22px 24px;margin-bottom:14px;transition:border-color .16s,background .16s}
+.card:hover{border-color:#4A4A58;background:#15151A}
+.row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.n{font-family:"IBM Plex Mono",monospace;font-size:12px;color:#6B6B78;letter-spacing:.14em}
+h2{font-size:21px;margin:6px 0 0;letter-spacing:-.01em}
+p{margin:8px 0 0;color:#9A9AA6;font-size:14.5px;max-width:70ch}
+.sw{display:flex;gap:5px;margin-top:14px}
+.sw i{width:22px;height:22px;border-radius:5px;display:block}
+.tag{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#6B6B78;letter-spacing:.1em}
+</style>
+</head>
+<body>
+<div class="w">
+  <h1>jubrolab 디자인 시안</h1>
+  <p class="sub mono">5 DIRECTIONS · 각 시안은 8개 프로젝트 실제 내용으로 채워져 있습니다</p>
+
+  <a class="card" href="01-fieldnotes.html">
+    <div class="row"><span class="n">01</span><span class="tag">단일 컬럼 · 라이트</span></div>
+    <h2>관찰 일지 — Field Notes</h2>
+    <p>모눈 종이 위의 실험 기록. 세리프 제목에 형광펜이 지나가고, 여백에는 손글씨로 한 줄씩 적어둡니다. 읽는 사이트.</p>
+    <div class="sw"><i style="background:#E7EBF0"></i><i style="background:#152238"></i><i style="background:#F2E24B"></i><i style="background:#C0432C"></i></div>
+  </a>
+
+  <a class="card" href="02-arcade.html">
+    <div class="row"><span class="n">02</span><span class="tag">그리드 + 프리뷰 · 다크</span></div>
+    <h2>셀렉트 화면 — Arcade Select</h2>
+    <p>게임 캐릭터 선택 화면. 타일 8개를 방향키로 옮겨 다니면 오른쪽 패널이 바뀝니다. 고르는 사이트.</p>
+    <div class="sw"><i style="background:#120A20"></i><i style="background:#FF2D78"></i><i style="background:#2AE7F0"></i><i style="background:#FFC93C"></i></div>
+  </a>
+
+  <a class="card" href="03-board.html">
+    <div class="row"><span class="n">03</span><span class="tag">테이블 · 다크</span></div>
+    <h2>배포 현황판 — Departure Board</h2>
+    <p>공항 안내판. 이름이 스플릿플랩으로 넘어가고 램프로 운영 여부를 알립니다. 훑는 사이트.</p>
+    <div class="sw"><i style="background:#0E0F12"></i><i style="background:#FFB020"></i><i style="background:#43D17C"></i><i style="background:#FF5B45"></i></div>
+  </a>
+
+  <a class="card" href="04-canvas.html">
+    <div class="row"><span class="n">04</span><span class="tag">무한 캔버스 · 라이트</span></div>
+    <h2>작업 캔버스 — Workspace Canvas</h2>
+    <p>끌고 굴려서 보는 노드 맵. 가운데 허브에서 게임/도구로 간선이 뻗고, 노드를 누르면 패널이 열립니다. 돌아다니는 사이트.</p>
+    <div class="sw"><i style="background:#F4F5F7"></i><i style="background:#141922"></i><i style="background:#E4572E"></i><i style="background:#2563EB"></i></div>
+  </a>
+
+  <a class="card" href="05-darkroom.html">
+    <div class="row"><span class="n">05</span><span class="tag">전시 그리드 · 다크</span></div>
+    <h2>암실 전시 — Darkroom</h2>
+    <p>각 프로젝트의 이름을 해시로 돌려 그림을 생성합니다. 미술관 벽 라벨 형식의 캡션. 보는 사이트.</p>
+    <div class="sw"><i style="background:#0A0A0D"></i><i style="background:#C8A45C"></i><i style="background:#F2EFE9"></i><i style="background:#7A5AF8"></i></div>
+  </a>
+</div>
+</body>
+</html>
