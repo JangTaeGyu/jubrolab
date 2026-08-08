@@ -57,11 +57,14 @@ app/
   page.tsx        바탕 세 겹(.hive 채운 칸 → 벌집 테두리 → .veil 어둠) + 관계도
   globals.css     색·글꼴 토큰과 바탕 패턴(SVG 를 base64 로 박아둔다)
   layout.tsx      글꼴(Space Grotesk · Gothic A1 · IBM Plex Mono)과 메타데이터
+  sitemap.ts      한 장짜리라 항목도 하나
+  robots.ts       전부 허용 + sitemap 주소
 components/
   graph.tsx       힘 시뮬레이션 + 캔버스 렌더 + 필터 + 상세 패널
   tech-icon.tsx   기술 글리프를 <svg> 로 (필터 칩)
   brand-mark.tsx  파비콘과 같은 도형의 브랜드 마크
 data/
+  site.ts         배포 도메인(https://jubrolab.dev). 절대 주소는 전부 여기서 나온다
   projects.ts     프로젝트 10개와 공유 태그
   tech-icons.ts   기술 글리프의 path — 칩(SVG)과 캔버스(Path2D)가 같은 문자열을 쓴다
 design/           초기 시안 5종(정적 HTML). 05-graph 가 지금 사이트가 됐다

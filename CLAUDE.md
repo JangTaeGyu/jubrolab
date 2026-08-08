@@ -35,6 +35,7 @@ npx tsc --noEmit     # 변경 후 이 둘은 항상 통과시켜 둔다
 | `data/tech-icons.ts` | 기술 글리프 path. 칩은 `<svg>`, 캔버스는 `Path2D` — **같은 문자열** |
 | `app/globals.css` | 색·글꼴 토큰과 바탕 세 겹. 패턴 SVG 는 base64 로 박아둔다 |
 | `app/page.tsx` | 바탕 겹치는 순서 = DOM 순서(`.hive` → `::before` 테두리 → `.veil`) |
+| `data/site.ts` | 배포 도메인 한 줄. OG · canonical · sitemap · robots 가 전부 여기를 본다 |
 | `scripts/*.mjs` | 생성물(아이콘 · OG · 파비콘 · 벌집 채운 칸)을 굽는다 |
 
 ## 이 저장소의 규칙

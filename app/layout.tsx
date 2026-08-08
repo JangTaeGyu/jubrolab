@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Gothic_A1, IBM_Plex_Mono, Space_Grotesk } from 'next/font/google';
+import { SITE } from '@/data/site';
 import './globals.css';
 
 /* 제목용 라틴. Archivo 는 반듯해서 조용했다. Space Grotesk 는 잘린 획과 각진 곡선이
@@ -33,14 +34,16 @@ const DESCRIPTION =
   'JubroLab은 AI, 교육, 게임, 개발자 도구 등 다양한 분야의 사이드 프로젝트를 실험하고 운영하는 공간입니다. 작은 아이디어에서 시작해 실제 사용자가 있는 서비스로 성장시키는 과정을 기록하고 공유합니다.';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://jubrolab.dev'),
+  metadataBase: new URL(SITE),
   title: TITLE,
   description: DESCRIPTION,
+  // 한 장짜리 사이트라 정규 주소도 하나다. 쿼리가 붙은 주소가 따로 색인되지 않게 한다.
+  alternates: { canonical: '/' },
   openGraph: {
     // 카드 이미지는 app/opengraph-image.png 를 Next 가 자동으로 붙인다.
     title: TITLE,
     description: DESCRIPTION,
-    url: 'https://jubrolab.dev',
+    url: SITE,
     siteName: 'JubroLab',
     locale: 'ko_KR',
     type: 'website',
