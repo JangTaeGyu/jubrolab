@@ -29,6 +29,12 @@ type NodeBase = {
   /** 흐림 정도(0~1). 필터에 걸리지 않은 것. */
   dim: number;
   want: number;
+  /** 제자리 흔들림의 위상과 속도. 노드마다 달라야 숨쉬듯 보이고, 같으면 화면이 통째로 밀린다. */
+  phase: number;
+  sway: number;
+  /** 흔들림으로 생긴 그릴 때의 어긋남. 물리 좌표(x·y)는 건드리지 않는다. */
+  ox: number;
+  oy: number;
 };
 type ProjectNode = NodeBase & { kind: 'p'; project: Project; img: HTMLImageElement };
 type TechNode = NodeBase & { kind: 't'; tag: TechTag; count: number };
@@ -44,6 +50,8 @@ export function Graph() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [filter, setFilter] = useState<TechTag | null>(null);
+  /** 분류 필터(게임·도구). 기술 필터와 함께 걸린다 — 둘 다 만족하는 것만 남는다. */
+  const [group, setGroup] = useState<Project['group'] | null>(null);
   const [hoverLabel, setHoverLabel] = useState<string | null>(null);
 
   /* 시뮬레이션 상태는 렌더와 무관하게 굴러가므로 전부 ref 에 둔다. */
@@ -64,10 +72,31 @@ export function Graph() {
   /* ── 그래프 만들기 (한 번) ───────────────────────── */
   useEffect(() => {
     const built: Node[] = [];
+    /** 흔들림은 노드마다 위상과 속도가 달라야 한다. 60fps 에서 한 바퀴가 대략 7~12초. */
+    const idle = () => ({
+      phase: Math.random() * Math.PI * 2,
+      sway: 0.0085 + Math.random() * 0.006,
+      ox: 0,
+      oy: 0,
+    });
+
     PROJECTS.forEach((project) => {
       const img = new Image();
       img.src = project.icon;
-      built.push({ kind: 'p', project, img, x: 0, y: 0, vx: 0, vy: 0, r: 29, hot: 0, dim: 0, want: 0 });
+      built.push({
+        kind: 'p',
+        project,
+        img,
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        r: 29,
+        hot: 0,
+        dim: 0,
+        want: 0,
+        ...idle(),
+      });
     });
     SHARED_TECH.forEach(({ tag, count }) =>
       built.push({
@@ -82,6 +111,7 @@ export function Graph() {
         hot: 0,
         dim: 0,
         want: 0,
+        ...idle(),
       }),
     );
 
@@ -109,19 +139,28 @@ export function Graph() {
     });
   }, []);
 
-  /* ── 필터 ────────────────────────────────────────── */
+  /* ── 필터 ──────────────────────────────────────────
+     기술(왼쪽 아래)과 분류(오른쪽 아래) 두 축이 동시에 걸린다. 기술 노드는 자기 이름이
+     걸렸거나 남은 프로젝트와 이어져 있으면 남는다 — 아니면 매달린 선이 허공을 가리킨다. */
   useEffect(() => {
+    const near = (n: Node, test: (other: Node) => boolean) =>
+      links.current.some((l) => (l.a === n && test(l.b)) || (l.b === n && test(l.a)));
+
     nodes.current.forEach((n) => {
-      if (!filter) return (n.want = 0);
-      const linked = links.current.some(
-        (l) =>
-          (l.a === n && l.b.kind === 't' && l.b.tag === filter) ||
-          (l.b === n && l.a.kind === 't' && l.a.tag === filter),
-      );
-      const self = n.kind === 't' && n.tag === filter;
-      n.want = self || linked ? 0 : 1;
+      const byTech =
+        !filter ||
+        (n.kind === 't'
+          ? n.tag === filter
+          : near(n, (o) => o.kind === 't' && o.tag === filter));
+      const byGroup =
+        !group ||
+        (n.kind === 'p'
+          ? n.project.group === group
+          : near(n, (o) => o.kind === 'p' && o.project.group === group));
+
+      n.want = byTech && byGroup ? 0 : 1;
     });
-  }, [filter]);
+  }, [filter, group]);
 
   /* ── 루프 ────────────────────────────────────────── */
   useEffect(() => {
@@ -132,6 +171,10 @@ export function Graph() {
 
     let raf = 0;
     let dpr = 1;
+    /* 흔들림의 시계. 프레임을 센다 — 흔들림 폭이 프레임 시간에 걸리지 않아도 되는 정도로 느리다. */
+    let tick = 0;
+    // 모션을 줄이라는 설정이면 제자리 흔들림을 아예 넣지 않는다. CSS 쪽 규칙은 캔버스에 닿지 않는다.
+    const stillness = matchMedia('(prefers-reduced-motion: reduce)');
 
     const resize = () => {
       dpr = Math.min(devicePixelRatio || 1, 2);
@@ -178,7 +221,17 @@ export function Graph() {
         if (l.b !== held.current) { l.b.vx -= (dx / d) * f; l.b.vy -= (dy / d) * f; }
       });
 
+      tick++;
+
       list.forEach((n) => {
+        /* 제자리 흔들림. 힘으로 밀면 스프링이 그걸 물고 늘어져 배치 전체가 천천히 떠내려간다 —
+           그래서 물리는 그대로 수렴시키고, 그릴 때만 어긋나게 한다. 폭이 정확히 ±3px 로 묶인다.
+           x·y 의 주기를 어긋나게 두면 원이 아니라 8자로 떠돈다. */
+        if (!stillness.matches) {
+          n.ox = Math.cos(tick * n.sway + n.phase) * 3.6;
+          n.oy = Math.sin(tick * n.sway * 0.83 + n.phase * 1.7) * 3.6;
+        }
+
         if (n !== held.current) {
           n.vx += (cx - n.x) * 0.0006;
           n.vy += (cy - n.y) * 0.0006;
@@ -259,21 +312,44 @@ export function Graph() {
       />
 
       {/* 머리말 */}
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-10 flex items-baseline justify-between gap-4 px-5 py-3.5 sm:px-7">
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-10 flex items-center justify-between gap-4 px-5 py-3.5 sm:px-7">
         <p className="flex items-center gap-2 font-display text-[15px] font-bold tracking-[-0.03em]">
           <BrandMark className="size-[19px] shrink-0" />
           {/* 자국 하나로 묶는다 — flex 자식으로 흩어지면 gap 이 글자 사이에도 들어간다. */}
-          <span>
-            jubro<span className="text-faint">·</span>lab
-          </span>
+          <span>JubroLab</span>
         </p>
-        <p className="font-mono text-[10.5px] tracking-[0.14em] text-faint tabular-nums">
-          NODES {COUNTS.total}
-          <span className="mx-2 text-white/15">+</span>
-          {SHARED_TECH.length}
-          <span className="mx-2 text-white/15">·</span>
-          LINKS {COUNTS.links}
-        </p>
+
+        {/* 분류 필터. 왼쪽 아래 기술 칩과 같은 모양이라 둘이 같은 종류의 조작으로 읽힌다.
+            범례였던 자리라 색 점을 그대로 남겨 노드 색과 이어준다. 기술은 프로젝트 분류가
+            아니므로 세는 칸으로만 두고 누르지 않는다 — 걸 것이 왼쪽에 이미 열 개 있다.
+            머리말이 pointer-events-none 이라 여기만 다시 켠다. */}
+        <div className="pointer-events-auto flex flex-wrap justify-end gap-1.5">
+          {(
+            [
+              { key: 'game', label: '게임', count: COUNTS.game, color: C.game },
+              { key: 'tool', label: '도구', count: COUNTS.tool, color: C.tool },
+            ] as const
+          ).map(({ key, label, count, color }) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={group === key}
+              onClick={() => setGroup((g) => (g === key ? null : key))}
+              className={`flex items-center gap-1.5 rounded-full border py-1.5 pr-3 pl-2.5 font-mono text-[10.5px] tracking-[0.06em] backdrop-blur-md transition ${
+                group === key
+                  ? 'border-bright bg-bright text-void'
+                  : 'border-edge bg-glass text-muted hover:border-white/35 hover:text-bright'
+              }`}
+            >
+              <i className="size-2 shrink-0 rounded-full" style={{ background: color }} />
+              {label} <span className="opacity-55">{count}</span>
+            </button>
+          ))}
+          <p className="flex items-center gap-1.5 rounded-full border border-transparent py-1.5 pr-3 pl-2.5 font-mono text-[10.5px] tracking-[0.06em] text-faint">
+            <i className="size-2 shrink-0 rounded-full" style={{ background: C.tech }} />
+            기술 <span className="opacity-55">{SHARED_TECH.length}</span>
+          </p>
+        </div>
       </header>
 
       {/* 제목이 커지면서 한 줄이 36ch 를 넘겼다. 제목은 넓게 두고 설명만 36ch 로 묶는다. */}
@@ -315,19 +391,16 @@ export function Graph() {
         ))}
       </div>
 
-      <div className="pointer-events-none fixed right-6 bottom-6 z-10 text-right font-mono text-[10.5px] leading-[1.9] tracking-[0.08em] text-faint">
-        <p>
-          <i className="mr-1.5 inline-block size-2 rounded-full align-[-1px]" style={{ background: C.game }} />
-          게임 {COUNTS.game}
-        </p>
-        <p>
-          <i className="mr-1.5 inline-block size-2 rounded-full align-[-1px]" style={{ background: C.tool }} />
-          도구 {COUNTS.tool}
-        </p>
-        <p>
-          <i className="mr-1.5 inline-block size-2 rounded-full align-[-1px]" style={{ background: C.tech }} />
-          기술 {SHARED_TECH.length}
-        </p>
+      {/* 연락처. 주소만 덩그러니 두면 무엇을 하라는 말인지 없어서 한 줄 붙였다.
+          한글은 본문 글꼴로 읽고 주소는 모노로 — 읽는 것과 누르는 것을 구분한다. */}
+      <div className="fixed right-5 bottom-5 z-10 text-right sm:right-8 sm:bottom-6">
+        <p className="text-[12px] leading-[1.6] text-faint">궁금한 사항은 여기로 문의 주세요</p>
+        <a
+          href="mailto:ttggbbgg2@gmail.com"
+          className="mt-0.5 inline-block font-mono text-[11px] tracking-[0.06em] text-muted transition hover:text-bright"
+        >
+          ttggbbgg2@gmail.com
+        </a>
       </div>
 
       {project && <Detail project={project} onClose={() => open(null)} onTech={setFilter} />}
@@ -509,9 +582,24 @@ function draw(
     ctx.globalAlpha = (0.3 + live * 0.62) * (1 - dim * 0.88);
     ctx.strokeStyle = live > 0.5 ? C.bright : base;
     ctx.lineWidth = 1 + live * 0.9;
+    /* 노드 반지름에서 끊는다. 중심까지 그으면 기술 노드의 유리질 안으로 선이 비쳐
+       노드 위를 지나가는 것처럼 보인다 — 그릴 순서만으로는 반투명을 못 가린다.
+       테두리 링(프로젝트는 r+4)까지 물러서야 선이 노드 뒤로 들어가는 것으로 읽힌다. */
+    const edge = (n: Node) => n.r * (1 + n.hot * 0.1) + (n.kind === 'p' ? 5 : 1);
+    const ax = l.a.x + l.a.ox;
+    const ay = l.a.y + l.a.oy;
+    const bx = l.b.x + l.b.ox;
+    const by = l.b.y + l.b.oy;
+    const dx = bx - ax;
+    const dy = by - ay;
+    const d = Math.hypot(dx, dy) || 1;
+    const ra = edge(l.a);
+    const rb = edge(l.b);
+    if (d <= ra + rb) return; // 두 노드가 붙어 있으면 그릴 선이 남지 않는다
+
     ctx.beginPath();
-    ctx.moveTo(l.a.x, l.a.y);
-    ctx.lineTo(l.b.x, l.b.y);
+    ctx.moveTo(ax + (dx / d) * ra, ay + (dy / d) * ra);
+    ctx.lineTo(bx - (dx / d) * rb, by - (dy / d) * rb);
     ctx.stroke();
   });
   ctx.globalAlpha = 1;
@@ -519,6 +607,9 @@ function draw(
   nodes.forEach((n) => {
     const fade = 1 - n.dim * 0.86;
     const r = n.r * (1 + n.hot * 0.1);
+    // 흔들림을 여기서만 더한다. 집는 판정(at)은 물리 좌표를 보므로 3px 은 티가 안 난다.
+    const x = n.x + n.ox;
+    const y = n.y + n.oy;
     ctx.globalAlpha = fade;
 
     if (n.kind === 't') {
@@ -527,43 +618,43 @@ function draw(
       ctx.strokeStyle = n.hot > 0.4 ? C.bright : 'rgba(255,255,255,.28)';
       ctx.lineWidth = 1.4 + n.hot;
       ctx.beginPath();
-      ctx.arc(n.x, n.y, r, 0, 7);
+      ctx.arc(x, y, r, 0, 7);
       ctx.fill();
       ctx.stroke();
 
       // 공유 2개짜리 노드(r≈14)에서도 글리프가 읽히게 아래를 받쳐둔다. 상자 대각선이
       // 원을 넘지 않는 한계가 r×1.41 이라 그 안에서 크게 잡는다.
-      drawGlyph(ctx, n.tag, n.x, n.y, Math.max(16, r * 1.15), n.hot);
+      drawGlyph(ctx, n.tag, x, y, Math.max(16, r * 1.15), n.hot);
 
       ctx.fillStyle = n.hot > 0.4 ? C.bright : C.muted;
       ctx.font = '500 11px "IBM Plex Mono", ui-monospace, monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(n.tag, n.x, n.y + r + 16);
+      ctx.fillText(n.tag, x, y + r + 16);
     } else {
       // 발광 — 어두운 바탕에서 노드를 띄운다
-      const glow = ctx.createRadialGradient(n.x, n.y, r * 0.7, n.x, n.y, r * 2.2);
+      const glow = ctx.createRadialGradient(x, y, r * 0.7, x, y, r * 2.2);
       const tint = n.project.group === 'game' ? C.game : C.tool;
       glow.addColorStop(0, hexA(tint, 0.34 * (0.4 + n.hot * 0.6)));
       glow.addColorStop(1, hexA(tint, 0));
       ctx.fillStyle = glow;
       ctx.beginPath();
-      ctx.arc(n.x, n.y, r * 2.2, 0, 7);
+      ctx.arc(x, y, r * 2.2, 0, 7);
       ctx.fill();
 
       ctx.strokeStyle = tint;
       ctx.lineWidth = 2 + n.hot * 2;
       ctx.beginPath();
-      ctx.arc(n.x, n.y, r + 4, 0, 7);
+      ctx.arc(x, y, r + 4, 0, 7);
       ctx.stroke();
 
       ctx.save();
       ctx.beginPath();
-      ctx.arc(n.x, n.y, r, 0, 7);
+      ctx.arc(x, y, r, 0, 7);
       ctx.clip();
       ctx.fillStyle = '#0b1020';
-      ctx.fillRect(n.x - r, n.y - r, r * 2, r * 2);
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
       if (n.img.complete && n.img.naturalWidth) {
-        ctx.drawImage(n.img, n.x - r, n.y - r, r * 2, r * 2);
+        ctx.drawImage(n.img, x - r, y - r, r * 2, r * 2);
       }
       ctx.restore();
 
@@ -571,7 +662,7 @@ function draw(
       if (n.project.status !== 'live') {
         ctx.fillStyle = STATUS[n.project.status].color;
         ctx.beginPath();
-        ctx.arc(n.x + r * 0.72, n.y - r * 0.72, 4.5, 0, 7);
+        ctx.arc(x + r * 0.72, y - r * 0.72, 4.5, 0, 7);
         ctx.fill();
       }
 
@@ -580,7 +671,7 @@ function draw(
       ctx.textAlign = 'center';
       const label =
         n.project.name.length > 20 ? n.project.name.slice(0, 19) + '…' : n.project.name;
-      ctx.fillText(label, n.x, n.y + r + 20);
+      ctx.fillText(label, x, y + r + 20);
     }
   });
   ctx.globalAlpha = 1;
