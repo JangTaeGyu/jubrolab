@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 5 — 관계도 (기술로 이어 보는)</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --paper:#fbfaf7; --card:#fff; --grid:#e6e3d8; --grid2:#d3cebc;
+  --line:#e2dfd5; --ink:#15150f; --muted:#67655c; --faint:#9a978c;
+  --game:#e4572e; --tool:#2563eb;
+  --disp:"Archivo",Pretendard,sans-serif; --mono:"IBM Plex Mono",monospace; --body:Pretendard,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{
+  font-family:var(--body);color:var(--ink);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+    linear-gradient(var(--grid2) 1px,transparent 1px),linear-gradient(90deg,var(--grid2) 1px,transparent 1px);
+  background-size:32px 32px,32px 32px,160px 160px,160px 160px;
+}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.top{position:fixed;top:0;left:0;right:0;padding:12px 18px;display:flex;justify-content:space-between;
+  align-items:baseline;gap:16px;pointer-events:none;z-index:5}
+.top b{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:-.01em}
+.top span{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--faint)}
+
+.title{position:fixed;top:60px;left:32px;z-index:4;pointer-events:none;max-width:34ch}
+.title h1{font-family:var(--disp);font-weight:800;font-size:clamp(22px,2.8vw,36px);letter-spacing:-.045em;margin:0;line-height:1.14}
+.title p{margin:12px 0 0;font-size:13px;color:var(--muted);line-height:1.8}
+
+.filters{position:fixed;left:32px;bottom:26px;z-index:5;display:flex;flex-wrap:wrap;gap:6px;max-width:min(560px,55vw)}
+.filters button{
+  border:1px solid var(--line);background:rgba(255,255,255,.85);border-radius:99px;cursor:pointer;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--muted);padding:6px 12px;
+  backdrop-filter:blur(6px);
+}
+.filters button:hover{border-color:var(--ink);color:var(--ink)}
+.filters button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+.legend{position:fixed;right:26px;bottom:26px;z-index:5;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.08em;color:var(--faint);line-height:1.9;text-align:right}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+
+/* 우측 상세 */
+.panel{
+  position:fixed;top:0;right:0;bottom:0;width:392px;max-width:92vw;z-index:10;background:var(--card);
+  border-left:1px solid var(--line);padding:26px 28px 34px;overflow-y:auto;
+  transform:translateX(102%);transition:transform .34s cubic-bezier(.25,.85,.3,1);
+  box-shadow:-30px 0 60px -34px rgba(21,21,15,.4);
+}
+.panel.on{transform:none}
+.panel .x{position:absolute;top:18px;right:20px;border:0;background:none;font-size:22px;color:var(--faint);cursor:pointer}
+.panel img{width:100%;aspect-ratio:1200/630;object-fit:cover;border-radius:10px;background:var(--grid)}
+.panel .k{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--faint);margin:18px 0 0}
+.panel h2{font-family:var(--disp);font-weight:800;font-size:25px;margin:8px 0 0;letter-spacing:-.03em}
+.panel .tl{margin:6px 0 0;color:var(--muted);font-size:13px}
+.panel .bd{margin:16px 0 0;color:var(--muted);font-size:13px;line-height:1.85}
+.panel dl{display:grid;grid-template-columns:84px 1fr;margin:20px 0 0;font-size:12.5px}
+.panel dt{font-family:var(--mono);font-size:10px;color:var(--faint);padding:8px 0;border-top:1px solid var(--line)}
+.panel dd{margin:0;padding:8px 0;border-top:1px solid var(--line)}
+.panel .go{display:block;text-align:center;margin-top:22px;background:var(--ink);color:var(--paper);
+  text-decoration:none;border-radius:99px;padding:12px;font-family:var(--disp);font-weight:600;font-size:12.5px}
+.panel .go.off{background:transparent;color:var(--faint);box-shadow:inset 0 0 0 1px var(--line)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="top"><b>jubro·lab</b><span id="stat">노드 10 + 기술 —</span></div>
+<div class="title">
+  <h1>아이디어를 현실로 만드는 1인 개발 연구실</h1>
+  <p>같은 기술을 쓴 프로젝트끼리 이어져 있습니다. 노드를 끌어 흩어보고, 아래에서 기술을 골라 걸러보세요.</p>
+</div>
+
+<canvas id="c"></canvas>
+
+<div class="filters" id="filters"></div>
+<div class="legend">
+  <span><i style="background:var(--game)"></i>게임</span><br>
+  <span><i style="background:var(--tool)"></i>도구</span><br>
+  <span><i style="background:#c9c4b4"></i>기술</span>
+</div>
+
+<aside class="panel" id="panel"><div id="pc"></div></aside>
+
+<script src="_projects.js"></script>
+<script>
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const panel = document.getElementById('panel');
+let W, H, dpr;
+
+/* ── 그래프 만들기 ─────────────────────────
+   두 개 이상이 함께 쓴 기술만 노드로 세운다. 한 번만 쓴 것까지 넣으면
+   잔가지가 늘어 정작 겹치는 관계가 안 보인다. */
+const use = {};
+PROJECTS.forEach(p => p.tech.forEach(t => (use[t] = (use[t] || 0) + 1)));
+const TECH = Object.keys(use).filter(t => use[t] > 1).sort((a, b) => use[b] - use[a]);
+
+const nodes = [];
+const links = [];
+PROJECTS.forEach((p, i) => nodes.push({
+  kind: 'p', p, id: p.id, label: p.name, r: 27,
+  img: Object.assign(new Image(), { src: ICON(p.id) }),
+  x: 0, y: 0, vx: 0, vy: 0, hot: 0, dim: 0,
+}));
+TECH.forEach(t => nodes.push({
+  kind: 't', id: 't:' + t, label: t, r: 9 + Math.min(9, use[t] * 2.2),
+  x: 0, y: 0, vx: 0, vy: 0, hot: 0, dim: 0,
+}));
+PROJECTS.forEach(p => p.tech.forEach(t => {
+  if (!TECH.includes(t)) return;
+  links.push({ a: nodes.find(n => n.id === p.id), b: nodes.find(n => n.id === 't:' + t) });
+}));
+
+document.getElementById('stat').textContent = `노드 ${PROJECTS.length} + 기술 ${TECH.length} · 연결 ${links.length}`;
+
+/* 필터 칩 */
+document.getElementById('filters').innerHTML =
+  TECH.map(t => `<button data-t="${t}">${t} <span style="opacity:.55">${use[t]}</span></button>`).join('');
+
+let filter = null;
+document.getElementById('filters').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  filter = filter === b.dataset.t ? null : b.dataset.t;
+  document.querySelectorAll('.filters button').forEach(x => x.classList.toggle('on', x.dataset.t === filter));
+  applyFilter();
+});
+function applyFilter() {
+  nodes.forEach(n => {
+    if (!filter) return (n.want = 0);
+    const linked = links.some(l =>
+      (l.a === n && l.b.label === filter) || (l.b === n && l.a.label === filter));
+    n.want = (n.label === filter || linked) ? 0 : 1;   // 1 이면 흐리게
+  });
+}
+applyFilter();
+
+function resize() {
+  dpr = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = W * dpr; cv.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+addEventListener('resize', resize); resize();
+
+// 원형으로 뿌려 시작 — 무작위로 두면 첫 몇 초가 지저분하다
+nodes.forEach((n, i) => {
+  const a = (i / nodes.length) * Math.PI * 2;
+  n.x = W / 2 + Math.cos(a) * Math.min(W, H) * 0.3;
+  n.y = H / 2 + Math.sin(a) * Math.min(W, H) * 0.3;
+});
+
+/* ── 힘 ───────────────────────────────── */
+function tick() {
+  const cx = W / 2 + 130, cy = H / 2 + 20;
+  // 밀어내기
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      let dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || .01;
+      const min = a.r + b.r + 62;
+      if (d < min) {
+        const f = (min - d) / d * 0.14;
+        if (a !== held) { a.x -= dx * f; a.y -= dy * f; }
+        if (b !== held) { b.x += dx * f; b.y += dy * f; }
+      } else if (d < 720) {
+        const f = 1100 / (d * d);
+        if (a !== held) { a.vx -= dx / d * f; a.vy -= dy / d * f; }
+        if (b !== held) { b.vx += dx / d * f; b.vy += dy / d * f; }
+      }
+    }
+  }
+  // 연결은 당긴다
+  links.forEach(l => {
+    const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y, d = Math.hypot(dx, dy) || .01;
+    const f = (d - 205) * 0.0038;
+    if (l.a !== held) { l.a.vx += dx / d * f; l.a.vy += dy / d * f; }
+    if (l.b !== held) { l.b.vx -= dx / d * f; l.b.vy -= dy / d * f; }
+  });
+  // 가운데로 모으기 + 감쇠
+  nodes.forEach(n => {
+    if (n === held) return;
+    n.vx += (cx - n.x) * 0.0006; n.vy += (cy - n.y) * 0.0006;
+    n.vx *= 0.86; n.vy *= 0.86;
+    n.x += n.vx; n.y += n.vy;
+    n.x = Math.max(n.r + 8, Math.min(W - n.r - 8, n.x));
+    n.y = Math.max(n.r + 8, Math.min(H - n.r - 8, n.y));
+    n.dim += ((n.want || 0) - n.dim) * 0.12;
+    n.hot += ((n === hover || n === held || n === picked ? 1 : 0) - n.hot) * 0.2;
+  });
+}
+
+/* ── 입력 ─────────────────────────────── */
+let held = null, hover = null, picked = null, grab = { x: 0, y: 0 }, moved = 0;
+const at = (x, y) => nodes.find(n => Math.hypot(n.x - x, n.y - y) < n.r + 6);
+
+cv.addEventListener('pointerdown', e => {
+  const n = at(e.clientX, e.clientY); if (!n) { close(); return; }
+  held = n; moved = 0; grab = { x: e.clientX - n.x, y: e.clientY - n.y };
+  cv.setPointerCapture(e.pointerId);
+});
+cv.addEventListener('pointermove', e => {
+  hover = held || at(e.clientX, e.clientY);
+  cv.style.cursor = hover ? (held ? 'grabbing' : 'grab') : 'default';
+  if (!held) return;
+  moved += Math.abs(e.movementX) + Math.abs(e.movementY);
+  held.x = e.clientX - grab.x; held.y = e.clientY - grab.y;
+  held.vx = held.vy = 0;
+});
+cv.addEventListener('pointerup', () => {
+  if (held && moved < 5) {
+    if (held.kind === 'p') open(held);
+    else { // 기술 노드를 누르면 그 기술로 거른다
+      filter = filter === held.label ? null : held.label;
+      document.querySelectorAll('.filters button').forEach(x => x.classList.toggle('on', x.dataset.t === filter));
+      applyFilter();
+    }
+  }
+  held = null;
+});
+
+function open(n) {
+  picked = n; const p = n.p;
+  document.getElementById('pc').innerHTML = `
+    <button class="x" onclick="closeP()" aria-label="닫기">×</button>
+    <img src="${OG(p.id)}" alt="">
+    <p class="k">${p.kind} <span style="color:var(--line)">/</span> ${p.group === 'game' ? 'GAME' : 'TOOL'}</p>
+    <h2>${p.name}</h2>
+    <p class="tl">${p.tagline}</p>
+    <p class="bd">${p.blurb}</p>
+    <dl>${p.specs.map(s => `<dt>${s[0]}</dt><dd>${s[1]}</dd>`).join('')}</dl>
+    ${p.status === 'live'
+      ? `<a class="go" href="${p.url}" target="_blank" rel="noreferrer">열어보기 ↗</a>`
+      : `<span class="go off">${BADGE[p.status]}</span>`}`;
+  panel.classList.add('on');
+}
+function close() { picked = null; panel.classList.remove('on'); }
+window.closeP = close;
+addEventListener('keydown', e => e.key === 'Escape' && close());
+
+/* ── 그리기 ───────────────────────────── */
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // 선
+  links.forEach(l => {
+    const near = hover && (l.a === hover || l.b === hover);
+    const dim = Math.max(l.a.dim, l.b.dim);
+    ctx.globalAlpha = (near ? .85 : .3) * (1 - dim * .84);
+    ctx.strokeStyle = near ? '#15150f' : (l.a.p?.group === 'game' ? '#e4572e' : '#2563eb');
+    ctx.lineWidth = near ? 1.8 : 1;
+    ctx.beginPath(); ctx.moveTo(l.a.x, l.a.y); ctx.lineTo(l.b.x, l.b.y); ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
+
+  // 노드
+  nodes.forEach(n => {
+    const fade = 1 - n.dim * .82;
+    ctx.globalAlpha = fade;
+    const r = n.r * (1 + n.hot * .1);
+
+    if (n.kind === 't') {
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = n.hot > .4 ? '#15150f' : '#c9c4b4';
+      ctx.lineWidth = 1.4 + n.hot;
+      ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = n.hot > .4 ? '#15150f' : '#7d7869';
+      ctx.font = '500 11px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(n.label, n.x, n.y + r + 15);
+    } else {
+      ctx.globalAlpha = fade * .16;
+      ctx.fillStyle = '#15150f';
+      ctx.beginPath(); ctx.ellipse(n.x, n.y + r + 5, r * .8, 5, 0, 0, 7); ctx.fill();
+      ctx.globalAlpha = fade;
+
+      ctx.strokeStyle = n.p.group === 'game' ? '#e4572e' : '#2563eb';
+      ctx.lineWidth = 2 + n.hot * 2;
+      ctx.beginPath(); ctx.arc(n.x, n.y, r + 4, 0, 7); ctx.stroke();
+
+      ctx.save();
+      ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 7); ctx.clip();
+      ctx.fillStyle = '#fff'; ctx.fillRect(n.x - r, n.y - r, r * 2, r * 2);
+      if (n.img.complete && n.img.naturalWidth) ctx.drawImage(n.img, n.x - r, n.y - r, r * 2, r * 2);
+      ctx.restore();
+
+      ctx.fillStyle = n.hot > .4 ? '#15150f' : '#67655c';
+      ctx.font = (n.hot > .4 ? '700 ' : '600 ') + '12px Archivo, Pretendard, sans-serif';
+      ctx.textAlign = 'center';
+      const t = n.label.length > 20 ? n.label.slice(0, 19) + '…' : n.label;
+      ctx.fillText(t, n.x, n.y + r + 20);
+    }
+  });
+  ctx.globalAlpha = 1;
+}
+
+(function loop() { tick(); draw(); requestAnimationFrame(loop); })();
+</script>
+</body>
+</html>

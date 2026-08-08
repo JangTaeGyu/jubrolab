@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 2 — 로비 (걸어 다니는 전시장)</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --paper:#fbfaf7; --card:#fff; --line:#e2dfd5; --line-soft:#eeece4;
+  --ink:#15150f; --muted:#67655c; --faint:#9a978c;
+  --disp:"Archivo",Pretendard,sans-serif; --mono:"IBM Plex Mono",monospace; --body:Pretendard,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--body)}
+canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.top{
+  position:fixed;top:0;left:0;right:0;padding:12px 18px;z-index:5;display:flex;
+  justify-content:space-between;align-items:baseline;gap:16px;pointer-events:none;
+}
+.top b{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:-.01em}
+.top span{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--faint)}
+
+.title{position:fixed;top:56px;left:0;right:0;text-align:center;z-index:4;pointer-events:none}
+.title h1{font-family:var(--disp);font-weight:800;font-size:clamp(22px,3.2vw,34px);letter-spacing:-.04em;margin:0;line-height:1.16}
+.title p{margin:8px 0 0;font-size:13px;color:var(--muted)}
+
+.keys{
+  position:fixed;left:18px;bottom:18px;z-index:5;display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--faint);
+  background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:10px;padding:8px 12px;backdrop-filter:blur(8px);
+}
+kbd{border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:var(--ink);background:#fff;font-family:var(--mono);font-size:10px}
+
+/* 부스 옆에 뜨는 말풍선 */
+.tag{
+  position:fixed;z-index:6;transform:translate(-50%,-100%);pointer-events:none;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px;
+  box-shadow:0 18px 34px -20px rgba(21,21,15,.5);min-width:210px;max-width:270px;
+  opacity:0;transition:opacity .16s;
+}
+.tag.on{opacity:1}
+.tag .k{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--faint)}
+.tag h3{font-family:var(--disp);font-weight:700;font-size:14px;margin:4px 0 0;letter-spacing:-.01em}
+.tag p{margin:4px 0 0;font-size:11.5px;color:var(--muted);line-height:1.5}
+.tag .enter{margin-top:9px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink)}
+.tag .badge{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:9px;letter-spacing:.12em;
+  background:var(--ink);color:var(--paper);border-radius:99px;padding:2px 8px}
+
+/* 상세 */
+.sheet{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:20px}
+.sheet.on{display:flex}
+.sheet .bg{position:absolute;inset:0;background:rgba(21,21,15,.4);backdrop-filter:blur(3px);border:0}
+.sheet .box{
+  position:relative;background:var(--card);border-radius:16px;overflow:hidden;width:min(760px,100%);
+  max-height:calc(100dvh - 40px);display:flex;flex-direction:column;
+  box-shadow:0 0 0 1px var(--line),0 50px 90px -40px rgba(21,21,15,.55);
+  animation:rise .34s cubic-bezier(.18,.85,.24,1) both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
+.sheet img{width:100%;aspect-ratio:1200/630;object-fit:cover;flex:0 0 auto}
+.sheet .in{padding:22px 26px 26px;overflow:auto}
+.sheet h2{font-family:var(--disp);font-weight:800;font-size:26px;margin:8px 0 0;letter-spacing:-.03em}
+.sheet .x{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:0;
+  background:rgba(21,21,15,.55);color:#fff;font-size:17px;cursor:pointer;backdrop-filter:blur(6px)}
+.sheet .go{display:inline-flex;gap:6px;margin-top:18px;background:var(--ink);color:var(--paper);
+  text-decoration:none;border-radius:99px;padding:11px 22px;font-family:var(--disp);font-weight:600;font-size:12.5px}
+.sheet .go.off{background:transparent;color:var(--faint);box-shadow:inset 0 0 0 1px var(--line)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="top"><b>jubro·lab</b><span id="near">전시장 · 프로젝트 10</span></div>
+<div class="title">
+  <h1>아이디어를 현실로 만드는 1인 개발 연구실</h1>
+  <p>걸어 다니며 둘러보세요. 부스 앞에 서면 무엇인지 알려줍니다.</p>
+</div>
+
+<canvas id="c"></canvas>
+
+<div class="keys">
+  <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 이동
+  <span style="opacity:.4">·</span> <kbd>Space</kbd> 열기
+  <span style="opacity:.4">·</span> 바닥을 눌러도 걸어갑니다
+</div>
+
+<div class="tag" id="tag"></div>
+
+<div class="sheet" id="sheet">
+  <button class="bg" id="bg" aria-label="닫기"></button>
+  <div class="box" id="box"></div>
+</div>
+
+<script src="_projects.js"></script>
+<script>
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const tagEl = document.getElementById('tag'), sheet = document.getElementById('sheet');
+
+/* 방은 논리 좌표로 고정하고, 화면에 맞춰 통째로 축소한다. */
+const ROOM = { w: 1500, h: 860 };
+const REACH = 96;               // 이만큼 다가가면 부스가 반응한다
+let view = { s: 1, ox: 0, oy: 0 };
+
+const booths = PROJECTS.map((p, i) => ({
+  p,
+  x: 190 + (i % 5) * 280,
+  y: 300 + Math.floor(i / 5) * 300,
+  img: Object.assign(new Image(), { src: ICON(p.id) }),
+  glow: 0,
+}));
+
+const me = { x: ROOM.w / 2, y: ROOM.h - 110, vx: 0, vy: 0, r: 17, face: -Math.PI / 2 };
+const trail = [];
+const keys = new Set();
+let target = null, active = null;
+
+/* ── 화면 맞춤 ─────────────────────────── */
+function resize() {
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  // 큰 화면에서는 방을 키워 화면을 채운다. 1 로 묶어두면 여백만 넓어진다.
+  view.s = Math.min(innerWidth / ROOM.w, (innerHeight - 120) / ROOM.h, 1.5);
+  view.ox = (innerWidth - ROOM.w * view.s) / 2;
+  view.oy = (innerHeight - ROOM.h * view.s) / 2;
+}
+addEventListener('resize', resize); resize();
+
+const toScreen = (x, y) => [x * view.s + view.ox, y * view.s + view.oy];
+const toRoom = (sx, sy) => [(sx - view.ox) / view.s, (sy - view.oy) / view.s];
+
+/* ── 입력 ─────────────────────────────── */
+addEventListener('keydown', e => {
+  if (sheet.classList.contains('on')) { if (e.key === 'Escape') closeSheet(); return; }
+  const k = e.key.toLowerCase();
+  if ('wasd'.includes(k) || k.startsWith('arrow')) { keys.add(k); target = null; e.preventDefault(); }
+  if (e.code === 'Space' && active) { e.preventDefault(); openSheet(active.p); }
+});
+addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+
+cv.addEventListener('pointerdown', e => {
+  const [x, y] = toRoom(e.clientX, e.clientY);
+  const hit = booths.find(b => Math.hypot(b.x - x, b.y - y) < 58);
+  if (hit && Math.hypot(hit.x - me.x, hit.y - me.y) < REACH) { openSheet(hit.p); return; }
+  target = { x, y };   // 바닥을 누르면 그쪽으로 걸어간다
+});
+
+/* ── 상세 ─────────────────────────────── */
+function openSheet(p) {
+  document.getElementById('box').innerHTML = `
+    <button class="x" onclick="closeSheet()" aria-label="닫기">×</button>
+    <img src="${OG(p.id)}" alt="">
+    <div class="in">
+      <span style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--faint)">
+        ${p.kind} <span style="color:var(--line)">/</span> ${p.group === 'game' ? 'GAME' : 'TOOL'}</span>
+      <h2>${p.name}</h2>
+      <p style="margin:6px 0 0;color:var(--muted);font-size:13.5px">${p.tagline}</p>
+      <p style="margin:16px 0 0;color:var(--muted);font-size:13.5px;line-height:1.85;max-width:60ch">${p.blurb}</p>
+      ${p.status === 'live'
+        ? `<a class="go" href="${p.url}" target="_blank" rel="noreferrer">열어보기 ↗</a>`
+        : `<span class="go off">${BADGE[p.status]}</span>`}
+    </div>`;
+  sheet.classList.add('on');
+}
+function closeSheet() { sheet.classList.remove('on'); }
+document.getElementById('bg').onclick = closeSheet;
+window.closeSheet = closeSheet;
+
+/* ── 루프 ─────────────────────────────── */
+function step() {
+  const paused = sheet.classList.contains('on');
+  let ax = 0, ay = 0;
+  if (!paused) {
+    if (keys.has('a') || keys.has('arrowleft')) ax -= 1;
+    if (keys.has('d') || keys.has('arrowright')) ax += 1;
+    if (keys.has('w') || keys.has('arrowup')) ay -= 1;
+    if (keys.has('s') || keys.has('arrowdown')) ay += 1;
+    if (!ax && !ay && target) {
+      const dx = target.x - me.x, dy = target.y - me.y, d = Math.hypot(dx, dy);
+      if (d < 6) target = null; else { ax = dx / d; ay = dy / d; }
+    }
+  }
+  const len = Math.hypot(ax, ay) || 1;
+  me.vx += (ax / len) * 1.5; me.vy += (ay / len) * 1.5;
+  me.vx *= 0.84; me.vy *= 0.84;
+  me.x = Math.max(40, Math.min(ROOM.w - 40, me.x + me.vx));
+  me.y = Math.max(40, Math.min(ROOM.h - 40, me.y + me.vy));
+  if (Math.hypot(me.vx, me.vy) > 0.6) {
+    me.face = Math.atan2(me.vy, me.vx);
+    trail.push({ x: me.x, y: me.y, a: 1 });
+    if (trail.length > 60) trail.shift();
+  }
+  trail.forEach(t => (t.a *= 0.965));
+
+  // 가장 가까운 부스 하나만 반응한다
+  let best = null, bestD = REACH;
+  booths.forEach(b => {
+    const d = Math.hypot(b.x - me.x, b.y - me.y);
+    if (d < bestD) { bestD = d; best = b; }
+  });
+  if (best !== active) { active = best; showTag(); }
+  booths.forEach(b => (b.glow += ((b === active ? 1 : 0) - b.glow) * 0.18));
+
+  draw();
+  requestAnimationFrame(step);
+}
+
+function showTag() {
+  if (!active) { tagEl.classList.remove('on'); document.getElementById('near').textContent = '전시장 · 프로젝트 10'; return; }
+  const p = active.p;
+  tagEl.innerHTML = `
+    <span class="k">${p.kind}</span>
+    <h3>${p.name}</h3>
+    <p>${p.tagline}</p>
+    ${p.status !== 'live' ? `<span class="badge">${BADGE[p.status]}</span>` : ''}
+    <div class="enter">SPACE 를 눌러 자세히</div>`;
+  tagEl.classList.add('on');
+  document.getElementById('near').textContent = p.name;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+  // 바닥 격자
+  ctx.save();
+  ctx.translate(view.ox, view.oy); ctx.scale(view.s, view.s);
+  ctx.fillStyle = '#fdfcfa'; ctx.fillRect(0, 0, ROOM.w, ROOM.h);
+  ctx.strokeStyle = '#eae7dd'; ctx.lineWidth = 1;
+  for (let x = 0; x <= ROOM.w; x += 50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ROOM.h); ctx.stroke(); }
+  for (let y = 0; y <= ROOM.h; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(ROOM.w, y); ctx.stroke(); }
+  ctx.strokeStyle = '#ddd8c9'; ctx.lineWidth = 2;
+  ctx.strokeRect(16, 16, ROOM.w - 32, ROOM.h - 32);
+
+  // 발자국
+  trail.forEach(t => {
+    ctx.globalAlpha = t.a * 0.22;
+    ctx.fillStyle = '#15150f';
+    ctx.beginPath(); ctx.arc(t.x, t.y, 9, 0, 7); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  // 부스
+  booths.forEach(b => {
+    const g = b.glow, lift = g * 8;
+    ctx.save(); ctx.translate(b.x, b.y - lift);
+    ctx.globalAlpha = 0.16 + g * 0.12;
+    ctx.fillStyle = '#15150f';
+    ctx.beginPath(); ctx.ellipse(0, 54 + lift, 46, 13, 0, 0, 7); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // 받침
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = g > 0.5 ? '#15150f' : '#e2dfd5';
+    ctx.lineWidth = 1 + g;
+    round(-52, -52, 104, 104, 22); ctx.fill(); ctx.stroke();
+
+    if (b.img.complete && b.img.naturalWidth) {
+      ctx.save(); round(-36, -36, 72, 72, 17); ctx.clip();
+      ctx.drawImage(b.img, -36, -36, 72, 72); ctx.restore();
+    }
+    // 이름표
+    ctx.fillStyle = g > 0.5 ? '#15150f' : '#9a978c';
+    ctx.font = '600 14px Archivo, Pretendard, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(b.p.name.length > 18 ? b.p.name.slice(0, 17) + '…' : b.p.name, 0, 84);
+    ctx.restore();
+  });
+
+  // 나
+  ctx.save(); ctx.translate(me.x, me.y);
+  ctx.globalAlpha = .18; ctx.fillStyle = '#15150f';
+  ctx.beginPath(); ctx.ellipse(0, 15, 17, 6, 0, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+  ctx.fillStyle = '#15150f';
+  ctx.beginPath(); ctx.arc(0, 0, me.r, 0, 7); ctx.fill();
+  ctx.fillStyle = '#fbfaf7';
+  ctx.beginPath();
+  ctx.arc(Math.cos(me.face) * 7, Math.sin(me.face) * 7, 5, 0, 7); ctx.fill();
+  ctx.restore();
+  ctx.restore();
+
+  // 말풍선은 HTML 이라 화면 좌표로 옮겨 붙인다
+  if (active) {
+    const [sx, sy] = toScreen(active.x, active.y - 66);
+    tagEl.style.left = sx + 'px';
+    tagEl.style.top = sy + 'px';
+  }
+}
+
+function round(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+step();
+</script>
+</body>
+</html>

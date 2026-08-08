@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 4 — 장난감 상자 (던지고 굴리는)</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --paper:#fbfaf7; --card:#fff; --grid:#e6e3d8; --grid2:#d3cebc;
+  --line:#e2dfd5; --ink:#15150f; --muted:#67655c; --faint:#9a978c;
+  --disp:"Archivo",Pretendard,sans-serif; --mono:"IBM Plex Mono",monospace; --body:Pretendard,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{
+  font-family:var(--body);color:var(--ink);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+    linear-gradient(var(--grid2) 1px,transparent 1px),linear-gradient(90deg,var(--grid2) 1px,transparent 1px);
+  background-size:32px 32px,32px 32px,160px 160px,160px 160px;
+}
+canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+canvas.grabbing{cursor:grabbing}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.top{position:fixed;top:0;left:0;right:0;padding:12px 18px;display:flex;justify-content:space-between;
+  align-items:baseline;gap:16px;pointer-events:none;z-index:5}
+.top b{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:-.01em}
+.top span{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--faint)}
+
+.title{position:fixed;top:64px;left:0;right:0;text-align:center;z-index:4;pointer-events:none}
+.title h1{font-family:var(--disp);font-weight:800;font-size:clamp(24px,3.6vw,42px);letter-spacing:-.045em;margin:0;line-height:1.12}
+.title p{margin:12px auto 0;max-width:52ch;font-size:13.5px;color:var(--muted);line-height:1.8}
+
+.tools{
+  position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:6;display:flex;gap:8px;
+  background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:99px;padding:7px 9px;
+  backdrop-filter:blur(10px);box-shadow:0 16px 34px -20px rgba(21,21,15,.4);
+}
+.tools button{
+  border:0;background:none;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted);
+  padding:8px 15px;border-radius:99px;cursor:pointer;
+}
+.tools button:hover{background:#f2f0ea;color:var(--ink)}
+.tools .on{background:var(--ink);color:var(--paper)}
+
+.legend{position:fixed;left:18px;bottom:20px;z-index:5;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.08em;color:var(--faint);line-height:1.9}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* 상세 */
+.sheet{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:20px}
+.sheet.on{display:flex}
+.sheet .bg{position:absolute;inset:0;background:rgba(21,21,15,.4);backdrop-filter:blur(3px);border:0}
+.sheet .box{position:relative;background:var(--card);border-radius:16px;overflow:hidden;width:min(720px,100%);
+  max-height:calc(100dvh - 40px);display:flex;flex-direction:column;
+  box-shadow:0 0 0 1px var(--line),0 50px 90px -40px rgba(21,21,15,.55);
+  animation:rise .34s cubic-bezier(.18,.85,.24,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none}}
+.sheet img{width:100%;aspect-ratio:1200/630;object-fit:cover;flex:0 0 auto}
+.sheet .in{padding:22px 26px 26px;overflow:auto}
+.sheet h2{font-family:var(--disp);font-weight:800;font-size:26px;margin:8px 0 0;letter-spacing:-.03em}
+.sheet .x{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:0;
+  background:rgba(21,21,15,.55);color:#fff;font-size:17px;cursor:pointer;backdrop-filter:blur(6px)}
+.sheet .go{display:inline-flex;gap:6px;margin-top:18px;background:var(--ink);color:var(--paper);
+  text-decoration:none;border-radius:99px;padding:11px 22px;font-family:var(--disp);font-weight:600;font-size:12.5px}
+.sheet .go.off{background:transparent;color:var(--faint);box-shadow:inset 0 0 0 1px var(--line)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="top"><b>jubro·lab</b><span id="stat">프로젝트 10 · 중력 켜짐</span></div>
+<div class="title">
+  <h1>아이디어를 현실로 만드는<br>1인 개발 연구실</h1>
+  <p>열 개를 상자에 쏟아뒀습니다. 끌어서 던지고, 부딪히게 두고, 하나를 눌러 열어보세요.</p>
+</div>
+
+<canvas id="c"></canvas>
+
+<div class="legend"><span><i style="background:#e4572e"></i>게임 4</span><br><span><i style="background:#2563eb"></i>도구 6</span></div>
+
+<div class="tools">
+  <button id="shake">흔들기</button>
+  <button id="grav" class="on">중력</button>
+  <button id="sort">정렬</button>
+</div>
+
+<div class="sheet" id="sheet">
+  <button class="bg" id="bg" aria-label="닫기"></button>
+  <div class="box" id="box"></div>
+</div>
+
+<script src="_projects.js"></script>
+<script>
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const sheet = document.getElementById('sheet');
+let W = 0, H = 0, dpr = 1;
+/* 물건이 노는 범위를 화면 전체로 두면 전부 화면 맨 아래에 깔려 가운데가 텅 빈다.
+   제목 아래에 실제 '상자'를 그리고 그 안에서만 굴리게 한다. */
+const BOX = { x: 0, y: 0, w: 0, h: 0 };
+function fitBox() {
+  const top = 236, bottomGap = 132;
+  BOX.h = Math.max(300, Math.min(560, H - top - bottomGap));
+  BOX.w = Math.min(1180, W - 96);
+  BOX.x = (W - BOX.w) / 2;
+  BOX.y = top + Math.max(0, (H - top - bottomGap - BOX.h) / 2);
+}
+let gravity = true, sorting = false;
+
+const R = 42;
+const balls = PROJECTS.map((p, i) => ({
+  p, r: R,
+  x: 0, y: 0, vx: 0, vy: 0, a: 0, va: 0,
+  img: Object.assign(new Image(), { src: ICON(p.id) }),
+  hot: 0,
+}));
+
+function resize() {
+  dpr = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = W * dpr; cv.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  fitBox();
+}
+addEventListener('resize', resize); resize();
+
+/* 처음엔 위에서 떨어뜨린다 */
+balls.forEach((b, i) => {
+  b.x = BOX.x + BOX.w / 2 + (i - balls.length / 2) * (R * 2.1);
+  b.y = BOX.y - 90 - i * 44;
+  b.vx = (Math.random() - .5) * 2;
+  b.va = (Math.random() - .5) * .1;
+});
+
+/* ── 물리 ─────────────────────────────── */
+function physics() {
+  const target = sorting ? layout() : null;
+
+  balls.forEach((b, i) => {
+    if (b === held) return;
+
+    if (target) {
+      // 정렬 모드: 제자리로 부드럽게 끌어당긴다
+      const t = target[i];
+      b.vx += (t.x - b.x) * 0.06; b.vy += (t.y - b.y) * 0.06;
+      b.vx *= 0.78; b.vy *= 0.78; b.va *= 0.8; b.a *= 0.9;
+    } else {
+      if (gravity) b.vy += 0.62;
+      b.vx *= 0.994; b.vy *= 0.994; b.va *= 0.99;
+    }
+
+    b.x += b.vx; b.y += b.vy; b.a += b.va;
+
+    // 상자 벽. 위쪽은 처음 떨어질 때 통과하도록 열어둔다.
+    const L = BOX.x, Rt = BOX.x + BOX.w, Bt = BOX.y + BOX.h;
+    if (b.x - b.r < L) { b.x = L + b.r; b.vx = Math.abs(b.vx) * 0.62; b.va += b.vy * 0.004; }
+    if (b.x + b.r > Rt) { b.x = Rt - b.r; b.vx = -Math.abs(b.vx) * 0.62; b.va -= b.vy * 0.004; }
+    if (b.y + b.r > Bt) {
+      b.y = Bt - b.r; b.vy = -Math.abs(b.vy) * 0.5;
+      b.vx *= 0.9; b.va += b.vx * 0.006;
+      if (Math.abs(b.vy) < 1.2) b.vy = 0;
+    }
+  });
+
+  // 원끼리 밀어내기 — 한 번만 훑어도 이 개수에선 충분히 안정적이다
+  for (let i = 0; i < balls.length; i++) {
+    for (let j = i + 1; j < balls.length; j++) {
+      const a = balls[i], b = balls[j];
+      let dx = b.x - a.x, dy = b.y - a.y;
+      let d = Math.hypot(dx, dy) || 0.001;
+      const overlap = a.r + b.r - d;
+      if (overlap <= 0) continue;
+      const nx = dx / d, ny = dy / d, push = overlap / 2;
+      if (a !== held) { a.x -= nx * push; a.y -= ny * push; }
+      if (b !== held) { b.x += nx * push; b.y += ny * push; }
+      // 법선 방향 속도만 교환한다
+      const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+      if (rel < 0) {
+        const imp = rel * 0.62;
+        if (a !== held) { a.vx += imp * nx; a.vy += imp * ny; a.va += imp * 0.004; }
+        if (b !== held) { b.vx -= imp * nx; b.vy -= imp * ny; b.va -= imp * 0.004; }
+      }
+    }
+  }
+  balls.forEach(b => (b.hot += ((b === hover || b === held ? 1 : 0) - b.hot) * 0.2));
+}
+
+/** 정렬 모드에서 각자 돌아갈 자리 */
+function layout() {
+  const cols = Math.max(3, Math.min(5, Math.floor(BOX.w / 190)));
+  const rows = Math.ceil(balls.length / cols);
+  const gapX = Math.min(200, BOX.w / (cols + 0.6)), gapY = Math.min(160, BOX.h / (rows + 0.4));
+  return balls.map((_, i) => ({
+    x: BOX.x + BOX.w / 2 + ((i % cols) - (cols - 1) / 2) * gapX,
+    y: BOX.y + BOX.h / 2 + (Math.floor(i / cols) - (rows - 1) / 2) * gapY,
+  }));
+}
+
+/* ── 입력 ─────────────────────────────── */
+let held = null, hover = null, grab = { x: 0, y: 0 }, last = { x: 0, y: 0 }, moved = 0;
+
+const at = (x, y) => balls.slice().reverse().find(b => Math.hypot(b.x - x, b.y - y) < b.r);
+
+cv.addEventListener('pointerdown', e => {
+  const b = at(e.clientX, e.clientY); if (!b) return;
+  held = b; moved = 0;
+  grab = { x: e.clientX - b.x, y: e.clientY - b.y };
+  last = { x: e.clientX, y: e.clientY };
+  cv.classList.add('grabbing'); cv.setPointerCapture(e.pointerId);
+});
+cv.addEventListener('pointermove', e => {
+  hover = held || at(e.clientX, e.clientY);
+  cv.style.cursor = hover ? (held ? 'grabbing' : 'grab') : 'default';
+  if (!held) return;
+  moved += Math.hypot(e.clientX - last.x, e.clientY - last.y);
+  held.x = e.clientX - grab.x; held.y = e.clientY - grab.y;
+  // 던질 때 손의 속도를 그대로 넘긴다
+  held.vx = e.clientX - last.x; held.vy = e.clientY - last.y;
+  held.va = (e.clientX - last.x) * 0.004;
+  last = { x: e.clientX, y: e.clientY };
+});
+cv.addEventListener('pointerup', e => {
+  if (held && moved < 6) open(held.p);   // 끌지 않고 눌렀으면 열기
+  held = null; cv.classList.remove('grabbing');
+});
+cv.addEventListener('pointercancel', () => (held = null));
+
+document.getElementById('shake').onclick = () => {
+  sorting = false; setSort(false);
+  balls.forEach(b => { b.vx += (Math.random() - .5) * 34; b.vy -= 8 + Math.random() * 20; b.va += (Math.random() - .5) * .3; });
+};
+document.getElementById('grav').onclick = e => {
+  gravity = !gravity; e.currentTarget.classList.toggle('on', gravity);
+  if (!gravity) balls.forEach(b => { b.vx += (Math.random() - .5) * 6; b.vy = -2 - Math.random() * 4; });
+  status();
+};
+document.getElementById('sort').onclick = () => { sorting = !sorting; setSort(sorting); status(); };
+function setSort(v) { document.getElementById('sort').classList.toggle('on', v); }
+function status() {
+  document.getElementById('stat').textContent =
+    `프로젝트 10 · ${sorting ? '정렬됨' : gravity ? '중력 켜짐' : '무중력'}`;
+}
+
+/* ── 상세 ─────────────────────────────── */
+function open(p) {
+  document.getElementById('box').innerHTML = `
+    <button class="x" onclick="closeSheet()" aria-label="닫기">×</button>
+    <img src="${OG(p.id)}" alt="">
+    <div class="in">
+      <span style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--faint)">
+        ${p.kind} <span style="color:var(--line)">/</span> ${p.group === 'game' ? 'GAME' : 'TOOL'}</span>
+      <h2>${p.name}</h2>
+      <p style="margin:6px 0 0;color:var(--muted);font-size:13.5px">${p.tagline}</p>
+      <p style="margin:16px 0 0;color:var(--muted);font-size:13.5px;line-height:1.85;max-width:60ch">${p.blurb}</p>
+      ${p.status === 'live'
+        ? `<a class="go" href="${p.url}" target="_blank" rel="noreferrer">열어보기 ↗</a>`
+        : `<span class="go off">${BADGE[p.status]}</span>`}
+    </div>`;
+  sheet.classList.add('on');
+}
+window.closeSheet = () => sheet.classList.remove('on');
+document.getElementById('bg').onclick = window.closeSheet;
+addEventListener('keydown', e => e.key === 'Escape' && window.closeSheet());
+
+/* ── 그리기 ───────────────────────────── */
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // 상자
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,.5)';
+  ctx.strokeStyle = '#ddd8c9'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(BOX.x, BOX.y, BOX.w, BOX.h, 18);
+  else ctx.rect(BOX.x, BOX.y, BOX.w, BOX.h);
+  ctx.fill();
+  // 위쪽은 트여 있으므로 세 변만 긋는다
+  ctx.beginPath();
+  ctx.moveTo(BOX.x, BOX.y + 10); ctx.lineTo(BOX.x, BOX.y + BOX.h - 18);
+  ctx.arcTo(BOX.x, BOX.y + BOX.h, BOX.x + 18, BOX.y + BOX.h, 18);
+  ctx.lineTo(BOX.x + BOX.w - 18, BOX.y + BOX.h);
+  ctx.arcTo(BOX.x + BOX.w, BOX.y + BOX.h, BOX.x + BOX.w, BOX.y + BOX.h - 18, 18);
+  ctx.lineTo(BOX.x + BOX.w, BOX.y + 10);
+  ctx.stroke();
+  ctx.restore();
+
+  balls.forEach(b => {
+    const lift = b.hot * 6, s = 1 + b.hot * 0.06;
+    ctx.save();
+    ctx.translate(b.x, b.y - lift);
+
+    // 바닥에서 멀어질수록 그림자를 옅게. 안 그러면 공중에 뜬 물건의 그림자만
+    // 바닥에 남아 따로 노는 것처럼 보인다.
+    const floorY = BOX.y + BOX.h;
+    const drop = Math.max(0, floorY - (b.y + b.r));
+    ctx.globalAlpha = 0.16 * (1 - Math.min(1, drop / 240));
+    ctx.fillStyle = '#15150f';
+    ctx.beginPath();
+    ctx.ellipse(0, floorY - (b.y - lift), b.r * (1 - Math.min(.4, drop / 500)), 7, 0, 0, 7);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.rotate(b.a); ctx.scale(s, s);
+    // 분류 테 — 게임은 주황, 도구는 파랑
+    ctx.strokeStyle = b.p.group === 'game' ? '#e4572e' : '#2563eb';
+    ctx.lineWidth = 2 + b.hot * 2;
+    ctx.globalAlpha = .28 + b.hot * .7;
+    ctx.beginPath(); ctx.arc(0, 0, b.r + 5, 0, 7); ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    ctx.save();
+    ctx.beginPath(); ctx.arc(0, 0, b.r, 0, 7); ctx.clip();
+    ctx.fillStyle = '#fff'; ctx.fillRect(-b.r, -b.r, b.r * 2, b.r * 2);
+    if (b.img.complete && b.img.naturalWidth) ctx.drawImage(b.img, -b.r, -b.r, b.r * 2, b.r * 2);
+    ctx.restore();
+    ctx.restore();
+  });
+
+  // 잡거나 올린 것의 이름표
+  const show = held || hover;
+  if (show) {
+    const t = show.p.name;
+    ctx.font = '600 13px Archivo, Pretendard, sans-serif';
+    const w = ctx.measureText(t).width + 22;
+    const x = show.x - w / 2, y = show.y - show.r - 40;
+    ctx.fillStyle = '#15150f';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(x, y, w, 27, 8) : ctx.rect(x, y, w, 27);
+    ctx.fill();
+    ctx.fillStyle = '#fbfaf7'; ctx.textAlign = 'center';
+    ctx.fillText(t, show.x, y + 18);
+  }
+}
+
+(function loop() { if (!sheet.classList.contains('on')) physics(); draw(); requestAnimationFrame(loop); })();
+</script>
+</body>
+</html>

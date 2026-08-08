@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 3 — 터미널 (쳐서 둘러보는)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#0f1013; --panel:#16181d; --line:#252932; --line-soft:#1c1f26;
+  --fg:#e8e6e1; --dim:#8b8f9a; --faint:#5d616c;
+  --acc:#7ee787;      /* 프롬프트 · 성공 */
+  --key:#79c0ff;      /* 명령 · 링크 */
+  --warn:#f0b429;     /* 준비 중 */
+  --off:#f0705a;      /* 종료 */
+  --mono:"IBM Plex Mono",ui-monospace,monospace; --disp:"Archivo",Pretendard,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:13.5px;line-height:1.7;
+  display:flex;align-items:center;justify-content:center;padding:22px;
+}
+::selection{background:var(--acc);color:#0f1013}
+:focus-visible{outline:1px solid var(--acc);outline-offset:2px}
+
+.term{
+  width:min(1180px,100%);height:min(840px,100%);background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 40px 90px -40px #000;
+}
+.bar{
+  height:38px;flex:0 0 38px;display:flex;align-items:center;gap:9px;padding:0 13px;
+  border-bottom:1px solid var(--line);background:#12141a;
+}
+.bar i{width:11px;height:11px;border-radius:50%;display:block}
+.bar .r{background:#ff5f57}.bar .y{background:#febc2e}.bar .g{background:#28c840}
+.bar span{margin-left:8px;color:var(--faint);font-size:11.5px;letter-spacing:.06em}
+
+.scroll{flex:1;overflow-y:auto;padding:18px 20px 4px;scrollbar-width:thin}
+.scroll::-webkit-scrollbar{width:8px}
+.scroll::-webkit-scrollbar-thumb{background:#282c35;border-radius:4px}
+
+.line{white-space:pre-wrap;word-break:break-word}
+/* 카드·이미지처럼 HTML 로 짠 출력은 pre-wrap 을 벗긴다.
+   안 그러면 템플릿 리터럴의 들여쓰기와 줄바꿈이 그대로 여백이 된다. */
+.blk{white-space:normal}
+.muted{color:var(--dim)}
+.faint{color:var(--faint)}
+.acc{color:var(--acc)}
+.key{color:var(--key)}
+.warn{color:var(--warn)}
+.off{color:var(--off)}
+.cmd{color:var(--fg)}
+.rule{color:var(--line);user-select:none}
+
+/* 프로젝트 카드 */
+.card{
+  display:grid;grid-template-columns:78px 1fr;gap:14px;align-items:start;
+  border:1px solid var(--line);border-left:2px solid var(--key);border-radius:8px;
+  padding:13px 15px;margin:10px 0;background:#13161b;
+}
+.card img{width:78px;height:78px;border-radius:18%;display:block}
+.card h3{font-family:var(--disp);font-weight:800;font-size:16px;margin:0;letter-spacing:-.01em;color:#fff}
+.card .sub{color:var(--dim);font-size:12.5px;margin:3px 0 0;font-family:Pretendard,sans-serif}
+.card .txt{color:var(--dim);font-size:12.5px;margin:9px 0 0;line-height:1.75;font-family:Pretendard,sans-serif;max-width:62ch}
+.card .row{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11.5px}
+.card a{color:var(--key)}
+.shot{display:block;width:100%;max-width:520px;border:1px solid var(--line);border-radius:8px;margin:10px 0}
+
+/* 표 */
+.tbl{margin:6px 0 2px}
+.tbl div{display:grid;grid-template-columns:20px 1fr 118px 96px;gap:12px}
+.tbl .h{color:var(--faint);border-bottom:1px solid var(--line-soft);padding-bottom:5px;margin-bottom:5px}
+.tbl b{font-weight:500;color:var(--fg)}
+.tbl button{
+  background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer;padding:0;
+  text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;
+}
+.tbl button:hover{color:var(--key);text-decoration-color:var(--key)}
+
+/* 입력 */
+.input{display:flex;align-items:center;gap:9px;padding:12px 20px 16px;border-top:1px solid var(--line);background:#13151a}
+.input .ps{color:var(--acc);white-space:nowrap}
+.input input{
+  flex:1;background:none;border:0;outline:0;color:var(--fg);font:inherit;caret-color:var(--acc);
+}
+.ghost{position:relative;flex:1;display:flex;align-items:center}
+.ghost .fill{position:absolute;left:0;color:var(--faint);pointer-events:none;white-space:pre}
+.hintbar{padding:0 20px 12px;color:var(--faint);font-size:11px;letter-spacing:.04em;background:#13151a}
+.hintbar kbd{border:1px solid var(--line);border-radius:3px;padding:0 4px;color:var(--dim)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="term" id="term">
+  <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>jubrolab — zsh — 프로젝트 10개</span></div>
+  <div class="scroll" id="out"></div>
+  <form class="input" id="form" autocomplete="off">
+    <span class="ps">jubrolab ~ $</span>
+    <span class="ghost">
+      <span class="fill" id="fill"></span>
+      <input id="in" aria-label="명령 입력" spellcheck="false">
+    </span>
+  </form>
+  <div class="hintbar">
+    <kbd>Tab</kbd> 자동완성 · <kbd>↑</kbd><kbd>↓</kbd> 기록 · <kbd>help</kbd> 로 명령 보기
+  </div>
+</div>
+
+<script src="_projects.js"></script>
+<script>
+const out = document.getElementById('out'), input = document.getElementById('in'), fill = document.getElementById('fill');
+const STATUS = { live: ['acc', '● live'], building: ['warn', '◐ 준비 중'], ended: ['off', '○ 종료'] };
+const history = []; let hp = 0;
+
+const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const el = (html, cls = 'line') => { const d = document.createElement('div'); d.className = cls; d.innerHTML = html; out.appendChild(d); return d; };
+const bottom = () => (out.scrollTop = out.scrollHeight);
+const find = q => PROJECTS.find(p => p.id === q || p.name.toLowerCase() === q.toLowerCase());
+
+/* ── 명령 ─────────────────────────────── */
+const CMDS = {
+  help() {
+    el(`<span class="muted">쓸 수 있는 명령</span>`);
+    [['ls', '프로젝트 목록. <span class="faint">ls game</span> / <span class="faint">ls tool</span> 로 걸러볼 수 있다'],
+     ['cat &lt;이름&gt;', '한 프로젝트를 자세히 본다'],
+     ['open &lt;이름&gt;', '실제 서비스를 새 탭으로 연다'],
+     ['shot &lt;이름&gt;', '대표 이미지를 띄운다'],
+     ['stack', '어떤 기술을 몇 번 썼는지 센다'],
+     ['whoami', '이 연구실이 무엇인지'],
+     ['clear', '화면을 비운다']]
+      .forEach(([c, d]) => el(`  <span class="key">${c.padEnd(16)}</span><span class="muted">${d}</span>`));
+    el(`<span class="faint">  이름은 <span class="key">kiply</span> 처럼 짧게 쳐도 되고 Tab 으로 완성해도 된다.</span>`);
+  },
+
+  ls(arg) {
+    const list = arg ? PROJECTS.filter(p => p.group === arg || p.status === arg) : PROJECTS;
+    if (!list.length) return el(`<span class="off">ls: '${esc(arg)}' 에 해당하는 게 없다. game · tool · live · ended 중 하나.</span>`);
+    const t = el('', 'tbl');
+    t.innerHTML =
+      `<div class="h"><span></span><span>이름</span><span>분류</span><span>상태</span></div>` +
+      list.map(p => {
+        const [c, label] = STATUS[p.status];
+        return `<div><span class="faint">${p.group === 'game' ? '🎮' : '🔧'}</span>` +
+          `<span><button data-cat="${p.id}"><b>${p.name}</b></button> <span class="faint">${p.tagline}</span></span>` +
+          `<span class="faint">${p.kind}</span><span class="${c}">${label}</span></div>`;
+      }).join('');
+    el(`<span class="faint">${list.length}개 — 이름을 눌러도 열린다.</span>`);
+  },
+
+  cat(arg) {
+    const p = find(arg);
+    if (!p) return el(`<span class="off">cat: '${esc(arg)}' 를 찾을 수 없다. <span class="key">ls</span> 로 목록을 본다.</span>`);
+    const [c, label] = STATUS[p.status];
+    el(`
+      <div class="card">
+        <img src="${ICON(p.id)}" alt="">
+        <div>
+          <h3>${p.name}</h3>
+          <p class="sub">${p.tagline}</p>
+          <p class="txt">${p.blurb}</p>
+          <div class="row">
+            ${p.specs.map(s => `<span class="faint">${s[0]} <span class="muted">${s[1]}</span></span>`).join('')}
+          </div>
+          <div class="row">
+            <span class="${c}">${label}</span>
+            ${p.url ? `<a href="${p.url}" target="_blank" rel="noreferrer">${p.url.replace('https://', '').replace(/\/$/, '')} ↗</a>`
+                    : `<span class="faint">웹으로 띄운 적 없음</span>`}
+            <span class="faint">shot ${p.id} <span class="muted">← 이미지 보기</span></span>
+          </div>
+        </div>
+      </div>`, 'blk');
+  },
+
+  shot(arg) {
+    const p = find(arg);
+    if (!p) return el(`<span class="off">shot: '${esc(arg)}' 를 찾을 수 없다.</span>`);
+    el(`<span class="muted">${p.name}</span><img class="shot" src="${OG(p.id)}" alt="${p.name} 대표 이미지">`, 'blk');
+  },
+
+  open(arg) {
+    const p = find(arg);
+    if (!p) return el(`<span class="off">open: '${esc(arg)}' 를 찾을 수 없다.</span>`);
+    if (!p.url) return el(`<span class="warn">${p.name} 은(는) 웹 서비스가 아니다. 열 주소가 없다.</span>`);
+    if (p.status !== 'live') return el(`<span class="warn">${p.name} 은(는) 지금 열려 있지 않다 (${STATUS[p.status][1]}). 주소만 남긴다 — ${p.url}</span>`);
+    el(`<span class="acc">${p.url} 여는 중…</span>`);
+    window.open(p.url, '_blank');
+  },
+
+  stack() {
+    const count = {};
+    PROJECTS.forEach(p => p.specs.forEach(([, v]) =>
+      String(v).split(' · ').forEach(t => (count[t] = (count[t] || 0) + 1))));
+    const rows = Object.entries(count).filter(([, n]) => n > 1).sort((a, b) => b[1] - a[1]);
+    el(`<span class="muted">두 번 이상 쓴 것만</span>`);
+    const max = rows[0][1];
+    rows.forEach(([k, n]) =>
+      el(`  <span class="key">${k.padEnd(16)}</span><span class="acc">${'█'.repeat(Math.round(n / max * 18))}</span> <span class="faint">${n}</span>`));
+  },
+
+  whoami() {
+    el(`<span class="muted">JubroLab — 아이디어를 현실로 만드는 1인 개발 연구실</span>`);
+    el(`<span class="faint">AI · 교육 · 게임 · 개발자 도구. 작은 아이디어에서 시작해 실제 사용자가 있는</span>`);
+    el(`<span class="faint">서비스로 키우는 과정을 기록하고 공유한다.</span>`);
+    const g = PROJECTS.filter(p => p.group === 'game').length;
+    el(`\n  <span class="faint">프로젝트</span> <b>${PROJECTS.length}</b>   <span class="faint">게임</span> <b>${g}</b>   <span class="faint">도구</span> <b>${PROJECTS.length - g}</b>   <span class="faint">운영 중</span> <b>${PROJECTS.filter(p => p.status === 'live').length}</b>`);
+  },
+
+  clear() { out.innerHTML = ''; },
+};
+
+function run(raw) {
+  const line = raw.trim();
+  el(`<span class="acc">jubrolab ~ $</span> <span class="cmd">${esc(line)}</span>`);
+  if (!line) return;
+  history.push(line); hp = history.length;
+  const [cmd, ...rest] = line.split(/\s+/);
+  const fn = CMDS[cmd.toLowerCase()];
+  if (!fn) {
+    const guess = Object.keys(CMDS).find(c => c.startsWith(cmd.toLowerCase()[0]));
+    el(`<span class="off">zsh: command not found: ${esc(cmd)}</span>` +
+       (guess ? `<span class="faint">  혹시 <span class="key">${guess}</span>?</span>` : ''));
+    return;
+  }
+  fn(rest.join(' '));
+}
+
+/* 목록의 이름을 눌러도 cat 이 돈다 */
+out.addEventListener('click', e => {
+  const b = e.target.closest('[data-cat]'); if (!b) return;
+  run('cat ' + b.dataset.cat); bottom();
+});
+
+/* ── 자동완성 · 기록 ───────────────────── */
+const NAMES = PROJECTS.map(p => p.id);
+function suggest(v) {
+  const [cmd, ...rest] = v.split(/\s+/);
+  if (rest.length === 0) return Object.keys(CMDS).find(c => c.startsWith(cmd) && c !== cmd) || '';
+  const arg = rest.join(' ');
+  const hit = NAMES.find(n => n.startsWith(arg) && n !== arg);
+  return hit ? cmd + ' ' + hit : '';
+}
+function paint() {
+  const s = suggest(input.value);
+  fill.textContent = s && input.value ? s : '';
+}
+input.addEventListener('input', paint);
+input.addEventListener('keydown', e => {
+  if (e.key === 'Tab') { e.preventDefault(); const s = suggest(input.value); if (s) { input.value = s; paint(); } }
+  if (e.key === 'ArrowUp') { e.preventDefault(); if (hp > 0) { input.value = history[--hp]; paint(); } }
+  if (e.key === 'ArrowDown') { e.preventDefault(); if (hp < history.length - 1) { input.value = history[++hp]; } else { hp = history.length; input.value = ''; } paint(); }
+});
+document.getElementById('form').addEventListener('submit', e => {
+  e.preventDefault(); run(input.value); input.value = ''; paint(); bottom();
+});
+document.getElementById('term').addEventListener('click', e => {
+  if (!e.target.closest('a,button,img')) input.focus();
+});
+
+/* ── 첫 화면: 부팅한 것처럼 한 줄씩 ────── */
+const BOOT = [
+  ['<span class="faint">JubroLab shell — 프로젝트 10개를 불러왔다.</span>', 240],
+  ['<span class="faint">무엇을 칠지 모르겠으면 <span class="key">help</span> 부터.</span>\n', 380],
+];
+let bi = 0;
+(function boot() {
+  if (bi >= BOOT.length) { run('ls'); input.focus(); bottom(); return; }
+  const [html, wait] = BOOT[bi++];
+  el(html); bottom();
+  setTimeout(boot, wait);
+})();
+</script>
+</body>
+</html>
