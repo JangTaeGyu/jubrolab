@@ -48,16 +48,13 @@ body {
   outline-offset: 3px;
 }
 
-/* 바탕 — 가운데가 살짝 밝고 별가루가 낀 우주. 관계도가 그 위에 뜬다. */
+/* 바탕 — 색기 없는 네이비 한 겹. 색은 노드(아이콘)와 게임·도구 테가 전부 담당하고
+   바탕은 물러선다. 컬러 빛무리를 넣어보니 노드의 발광과 세기가 겹쳐 서로를 깎았다. */
 .space {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background:
-    radial-gradient(78% 58% at 52% 42%, rgba(86, 104, 190, 0.34), transparent 70%),
-    radial-gradient(60% 46% at 12% 88%, rgba(38, 60, 108, 0.44), transparent 68%),
-    radial-gradient(56% 44% at 90% 14%, rgba(112, 72, 150, 0.28), transparent 66%),
-    linear-gradient(165deg, #141a2e 0%, #0b1020 52%, #080b16 100%);
+  background: linear-gradient(168deg, #131828 0%, #0b1020 54%, #080b16 100%);
 }
 
 /* 별가루. 큰 그라디언트에서 생기는 띠도 같이 지운다. */

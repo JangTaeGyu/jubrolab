@@ -20,7 +20,6 @@ const ICONS = path.join(process.cwd(), 'public/icons');
 
 const VOID = '#080b16';
 const DEEP = '#0b1020';
-const MID = '#141a2e';
 const BRIGHT = '#eef1f8';
 const MUTED = '#9aa2bb';
 const FAINT = '#626b85';
@@ -123,13 +122,11 @@ const ballHexes = ballCells
 
 const board = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="${MID}"/><stop offset="0.55" stop-color="${DEEP}"/><stop offset="1" stop-color="${VOID}"/>
+    <!-- 색기 없는 네이비 한 겹. 사이트 배경(globals.css .space)과 같다.
+         컬러 빛무리를 넣어보니 아이콘의 발광과 세기가 겹쳐 서로를 깎았다. -->
+    <linearGradient id="sky" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#131828"/><stop offset="0.54" stop-color="${DEEP}"/><stop offset="1" stop-color="${VOID}"/>
     </linearGradient>
-    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#5668be" stop-opacity="0.4"/>
-      <stop offset="1" stop-color="#5668be" stop-opacity="0"/>
-    </radialGradient>
     <pattern id="ball" width="${BALL_W}" height="${BALL_H.toFixed(2)}" patternUnits="userSpaceOnUse">
       <g fill="none" stroke="#ffffff" stroke-width="1">${ballHexes}</g>
     </pattern>
@@ -147,7 +144,6 @@ const board = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}
   </defs>
 
   <rect width="${W}" height="${H}" fill="url(#sky)"/>
-  <circle cx="${CX}" cy="${CY}" r="336" fill="url(#halo)"/>
 
   <!-- 육각 벌집. 가운데는 비워 관계도와 제목이 묻히지 않게 한다. -->
   <!-- 0.13 — 왼쪽 작은 모노 글자와 밝기가 겹치지 않는 선. -->
