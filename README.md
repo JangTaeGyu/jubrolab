@@ -90,6 +90,15 @@ reference/DATA.md 각 프로젝트의 주소와 로컬 저장소 경로
   없는 프로젝트를 그릴 때와 같은 방식으로 그린다. Canvas · LLM 은 애초에 로고가 없는
   태그라 뜻(액자 · 반짝임)으로 그렸다.
 
+## 배포
+
+Vercel. Next.js 는 설정 없이도 붙으므로 `vercel.json` 에는 프레임워크가 정하지 않는
+것만 적는다 — `www` → 정식 도메인 리다이렉트, 보안 헤더, 그리고 이름이 고정된
+`public/icons` · `public/og` 의 캐시. `/_next/static` 은 Vercel 이 알아서 영구 캐시한다.
+
+도메인은 `data/site.ts` 한 줄이다. OG 카드 · canonical · `sitemap.xml` · `robots.txt`
+가 모두 그 값을 쓴다.
+
 ## 스택
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Canvas 2D · sharp(생성물)
