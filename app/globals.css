@@ -1,17 +1,23 @@
 @import 'tailwindcss';
 
 @theme {
-  /* 흰 격자 위. 색은 프로젝트 OG 이미지가 전부 담당하고 바탕은 자리만 내준다. */
-  --color-paper: #fbfaf7;
-  --color-card: #ffffff;
-  --color-grid: #e6e3d8;
-  --color-grid-strong: #d3cebc;
-  --color-line: #e2dfd5;
-  --color-line-soft: #eeece4;
+  /* 딥 네이비 — 관계도는 선이 주역이라 어두운 바탕에서 가장 읽힌다.
+     아이콘 10개가 이미 모든 색을 가지고 있으니 바탕은 무채색으로 물러선다. */
+  --color-void: #080b16;
+  --color-deep: #0b1020;
+  --color-mid: #141a2e;
 
-  --color-ink: #15150f;
-  --color-muted: #67655c;
-  --color-faint: #9a978c;
+  --color-panel: #111729;
+  --color-glass: rgba(255, 255, 255, 0.05);
+  --color-edge: rgba(255, 255, 255, 0.12);
+  --color-edge-soft: rgba(255, 255, 255, 0.07);
+
+  --color-bright: #eef1f8;
+  --color-muted: #9aa2bb;
+  --color-faint: #626b85;
+
+  --color-game: #ff7a52;
+  --color-tool: #5b9bff;
 
   --font-display: var(--font-archivo), 'Pretendard Variable', Pretendard, sans-serif;
   --font-body: 'Pretendard Variable', Pretendard, var(--font-archivo), sans-serif;
@@ -25,91 +31,62 @@ body {
 
 body {
   margin: 0;
-  color: var(--color-ink);
+  color: var(--color-bright);
   font-family: var(--font-body);
-  background-color: var(--color-paper);
+  background-color: var(--color-void);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 ::selection {
-  background: var(--color-ink);
-  color: var(--color-paper);
+  background: var(--color-bright);
+  color: var(--color-void);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-ink);
+  outline: 2px solid rgba(255, 255, 255, 0.7);
   outline-offset: 3px;
 }
 
-/* 바탕 — 32px 잔격자 위에 160px 굵은 격자를 겹친다. */
-.wallpaper {
+/* 바탕 — 가운데가 살짝 밝고 별가루가 낀 우주. 관계도가 그 위에 뜬다. */
+.space {
   position: fixed;
   inset: 0;
-  z-index: -1;
-  background-color: var(--color-paper);
-  background-image:
-    linear-gradient(var(--color-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px),
-    linear-gradient(var(--color-grid-strong) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-grid-strong) 1px, transparent 1px);
-  background-size:
-    32px 32px,
-    32px 32px,
-    160px 160px,
-    160px 160px;
-  background-position: center center;
+  z-index: -2;
+  background:
+    radial-gradient(78% 58% at 52% 42%, rgba(86, 104, 190, 0.34), transparent 70%),
+    radial-gradient(60% 46% at 12% 88%, rgba(38, 60, 108, 0.44), transparent 68%),
+    radial-gradient(56% 44% at 90% 14%, rgba(112, 72, 150, 0.28), transparent 66%),
+    linear-gradient(165deg, #141a2e 0%, #0b1020 52%, #080b16 100%);
 }
 
-/* 가장자리로 갈수록 격자를 옅게 해 가운데로 눈이 모이게 한다. */
-.wallpaper::after {
+/* 별가루. 큰 그라디언트에서 생기는 띠도 같이 지운다. */
+.space::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(120% 90% at 50% 42%, transparent 30%, rgba(251, 250, 247, 0.72) 100%);
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' fill='%23fff'/%3E%3C/svg%3E");
 }
 
-/* 롤링 배너 — 같은 줄을 두 벌 이어붙이고 한 벌 폭만큼 밀어 이음매를 없앤다. */
-@keyframes marquee {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(-50%, 0, 0);
-  }
+/* 육각 벌집. 육각형은 평면을 빈틈없이 채우므로 타일 하나로 이음매가 맞는다.
+   SVG 는 base64 로 넣는다. 좌표에 큰따옴표·음수가 섞이면 CSS 문자열이 중간에 끊긴다.
+   가장자리에만 남기고 가운데는 비워 관계도와 제목이 묻히지 않게 한다. */
+.space::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.22;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNTYnIGhlaWdodD0nOTAuMDcnPjxnIGZpbGw9J25vbmUnIHN0cm9rZT0nI2ZmZmZmZicgc3Ryb2tlLXdpZHRoPScxJz48cG9seWdvbiBwb2ludHM9Jy0xMy4wMCwtMjIuNTIgLTI2LjAwLDAuMDAgLTUyLjAwLDAuMDAgLTY1LjAwLC0yMi41MiAtNTIuMDAsLTQ1LjAzIC0yNi4wMCwtNDUuMDMnLz48cG9seWdvbiBwb2ludHM9Jy0xMy4wMCwyMi41MiAtMjYuMDAsNDUuMDMgLTUyLjAwLDQ1LjAzIC02NS4wMCwyMi41MiAtNTIuMDAsMC4wMCAtMjYuMDAsMC4wMCcvPjxwb2x5Z29uIHBvaW50cz0nLTEzLjAwLDY3LjU1IC0yNi4wMCw5MC4wNyAtNTIuMDAsOTAuMDcgLTY1LjAwLDY3LjU1IC01Mi4wMCw0NS4wMyAtMjYuMDAsNDUuMDMnLz48cG9seWdvbiBwb2ludHM9Jy0xMy4wMCwxMTIuNTggLTI2LjAwLDEzNS4xMCAtNTIuMDAsMTM1LjEwIC02NS4wMCwxMTIuNTggLTUyLjAwLDkwLjA3IC0yNi4wMCw5MC4wNycvPjxwb2x5Z29uIHBvaW50cz0nLTEzLjAwLDE1Ny42MiAtMjYuMDAsMTgwLjEzIC01Mi4wMCwxODAuMTMgLTY1LjAwLDE1Ny42MiAtNTIuMDAsMTM1LjEwIC0yNi4wMCwxMzUuMTAnLz48cG9seWdvbiBwb2ludHM9JzI2LjAwLC00NS4wMyAxMy4wMCwtMjIuNTIgLTEzLjAwLC0yMi41MiAtMjYuMDAsLTQ1LjAzIC0xMy4wMCwtNjcuNTUgMTMuMDAsLTY3LjU1Jy8+PHBvbHlnb24gcG9pbnRzPScyNi4wMCwwLjAwIDEzLjAwLDIyLjUyIC0xMy4wMCwyMi41MiAtMjYuMDAsMC4wMCAtMTMuMDAsLTIyLjUyIDEzLjAwLC0yMi41MicvPjxwb2x5Z29uIHBvaW50cz0nMjYuMDAsNDUuMDMgMTMuMDAsNjcuNTUgLTEzLjAwLDY3LjU1IC0yNi4wMCw0NS4wMyAtMTMuMDAsMjIuNTIgMTMuMDAsMjIuNTInLz48cG9seWdvbiBwb2ludHM9JzI2LjAwLDkwLjA3IDEzLjAwLDExMi41OCAtMTMuMDAsMTEyLjU4IC0yNi4wMCw5MC4wNyAtMTMuMDAsNjcuNTUgMTMuMDAsNjcuNTUnLz48cG9seWdvbiBwb2ludHM9JzI2LjAwLDEzNS4xMCAxMy4wMCwxNTcuNjIgLTEzLjAwLDE1Ny42MiAtMjYuMDAsMTM1LjEwIC0xMy4wMCwxMTIuNTggMTMuMDAsMTEyLjU4Jy8+PHBvbHlnb24gcG9pbnRzPSc2NS4wMCwtMjIuNTIgNTIuMDAsMC4wMCAyNi4wMCwwLjAwIDEzLjAwLC0yMi41MiAyNi4wMCwtNDUuMDMgNTIuMDAsLTQ1LjAzJy8+PHBvbHlnb24gcG9pbnRzPSc2NS4wMCwyMi41MiA1Mi4wMCw0NS4wMyAyNi4wMCw0NS4wMyAxMy4wMCwyMi41MiAyNi4wMCwwLjAwIDUyLjAwLDAuMDAnLz48cG9seWdvbiBwb2ludHM9JzY1LjAwLDY3LjU1IDUyLjAwLDkwLjA3IDI2LjAwLDkwLjA3IDEzLjAwLDY3LjU1IDI2LjAwLDQ1LjAzIDUyLjAwLDQ1LjAzJy8+PHBvbHlnb24gcG9pbnRzPSc2NS4wMCwxMTIuNTggNTIuMDAsMTM1LjEwIDI2LjAwLDEzNS4xMCAxMy4wMCwxMTIuNTggMjYuMDAsOTAuMDcgNTIuMDAsOTAuMDcnLz48cG9seWdvbiBwb2ludHM9JzY1LjAwLDE1Ny42MiA1Mi4wMCwxODAuMTMgMjYuMDAsMTgwLjEzIDEzLjAwLDE1Ny42MiAyNi4wMCwxMzUuMTAgNTIuMDAsMTM1LjEwJy8+PHBvbHlnb24gcG9pbnRzPScxMDQuMDAsLTQ1LjAzIDkxLjAwLC0yMi41MiA2NS4wMCwtMjIuNTIgNTIuMDAsLTQ1LjAzIDY1LjAwLC02Ny41NSA5MS4wMCwtNjcuNTUnLz48cG9seWdvbiBwb2ludHM9JzEwNC4wMCwwLjAwIDkxLjAwLDIyLjUyIDY1LjAwLDIyLjUyIDUyLjAwLDAuMDAgNjUuMDAsLTIyLjUyIDkxLjAwLC0yMi41MicvPjxwb2x5Z29uIHBvaW50cz0nMTA0LjAwLDQ1LjAzIDkxLjAwLDY3LjU1IDY1LjAwLDY3LjU1IDUyLjAwLDQ1LjAzIDY1LjAwLDIyLjUyIDkxLjAwLDIyLjUyJy8+PHBvbHlnb24gcG9pbnRzPScxMDQuMDAsOTAuMDcgOTEuMDAsMTEyLjU4IDY1LjAwLDExMi41OCA1Mi4wMCw5MC4wNyA2NS4wMCw2Ny41NSA5MS4wMCw2Ny41NScvPjxwb2x5Z29uIHBvaW50cz0nMTA0LjAwLDEzNS4xMCA5MS4wMCwxNTcuNjIgNjUuMDAsMTU3LjYyIDUyLjAwLDEzNS4xMCA2NS4wMCwxMTIuNTggOTEuMDAsMTEyLjU4Jy8+PHBvbHlnb24gcG9pbnRzPScxNDMuMDAsLTIyLjUyIDEzMC4wMCwwLjAwIDEwNC4wMCwwLjAwIDkxLjAwLC0yMi41MiAxMDQuMDAsLTQ1LjAzIDEzMC4wMCwtNDUuMDMnLz48cG9seWdvbiBwb2ludHM9JzE0My4wMCwyMi41MiAxMzAuMDAsNDUuMDMgMTA0LjAwLDQ1LjAzIDkxLjAwLDIyLjUyIDEwNC4wMCwwLjAwIDEzMC4wMCwwLjAwJy8+PHBvbHlnb24gcG9pbnRzPScxNDMuMDAsNjcuNTUgMTMwLjAwLDkwLjA3IDEwNC4wMCw5MC4wNyA5MS4wMCw2Ny41NSAxMDQuMDAsNDUuMDMgMTMwLjAwLDQ1LjAzJy8+PHBvbHlnb24gcG9pbnRzPScxNDMuMDAsMTEyLjU4IDEzMC4wMCwxMzUuMTAgMTA0LjAwLDEzNS4xMCA5MS4wMCwxMTIuNTggMTA0LjAwLDkwLjA3IDEzMC4wMCw5MC4wNycvPjxwb2x5Z29uIHBvaW50cz0nMTQzLjAwLDE1Ny42MiAxMzAuMDAsMTgwLjEzIDEwNC4wMCwxODAuMTMgOTEuMDAsMTU3LjYyIDEwNC4wMCwxMzUuMTAgMTMwLjAwLDEzNS4xMCcvPjxwb2x5Z29uIHBvaW50cz0nMTgyLjAwLC00NS4wMyAxNjkuMDAsLTIyLjUyIDE0My4wMCwtMjIuNTIgMTMwLjAwLC00NS4wMyAxNDMuMDAsLTY3LjU1IDE2OS4wMCwtNjcuNTUnLz48cG9seWdvbiBwb2ludHM9JzE4Mi4wMCwwLjAwIDE2OS4wMCwyMi41MiAxNDMuMDAsMjIuNTIgMTMwLjAwLDAuMDAgMTQzLjAwLC0yMi41MiAxNjkuMDAsLTIyLjUyJy8+PHBvbHlnb24gcG9pbnRzPScxODIuMDAsNDUuMDMgMTY5LjAwLDY3LjU1IDE0My4wMCw2Ny41NSAxMzAuMDAsNDUuMDMgMTQzLjAwLDIyLjUyIDE2OS4wMCwyMi41MicvPjxwb2x5Z29uIHBvaW50cz0nMTgyLjAwLDkwLjA3IDE2OS4wMCwxMTIuNTggMTQzLjAwLDExMi41OCAxMzAuMDAsOTAuMDcgMTQzLjAwLDY3LjU1IDE2OS4wMCw2Ny41NScvPjxwb2x5Z29uIHBvaW50cz0nMTgyLjAwLDEzNS4xMCAxNjkuMDAsMTU3LjYyIDE0My4wMCwxNTcuNjIgMTMwLjAwLDEzNS4xMCAxNDMuMDAsMTEyLjU4IDE2OS4wMCwxMTIuNTgnLz48cG9seWdvbiBwb2ludHM9JzIyMS4wMCwtMjIuNTIgMjA4LjAwLDAuMDAgMTgyLjAwLDAuMDAgMTY5LjAwLC0yMi41MiAxODIuMDAsLTQ1LjAzIDIwOC4wMCwtNDUuMDMnLz48cG9seWdvbiBwb2ludHM9JzIyMS4wMCwyMi41MiAyMDguMDAsNDUuMDMgMTgyLjAwLDQ1LjAzIDE2OS4wMCwyMi41MiAxODIuMDAsMC4wMCAyMDguMDAsMC4wMCcvPjxwb2x5Z29uIHBvaW50cz0nMjIxLjAwLDY3LjU1IDIwOC4wMCw5MC4wNyAxODIuMDAsOTAuMDcgMTY5LjAwLDY3LjU1IDE4Mi4wMCw0NS4wMyAyMDguMDAsNDUuMDMnLz48cG9seWdvbiBwb2ludHM9JzIyMS4wMCwxMTIuNTggMjA4LjAwLDEzNS4xMCAxODIuMDAsMTM1LjEwIDE2OS4wMCwxMTIuNTggMTgyLjAwLDkwLjA3IDIwOC4wMCw5MC4wNycvPjxwb2x5Z29uIHBvaW50cz0nMjIxLjAwLDE1Ny42MiAyMDguMDAsMTgwLjEzIDE4Mi4wMCwxODAuMTMgMTY5LjAwLDE1Ny42MiAxODIuMDAsMTM1LjEwIDIwOC4wMCwxMzUuMTAnLz48L2c+PC9zdmc+');
+  background-size: 156px 90.07px;
+  mask-image: radial-gradient(82% 74% at 50% 46%, transparent 20%, #000 76%);
+  -webkit-mask-image: radial-gradient(82% 74% at 50% 46%, transparent 20%, #000 76%);
 }
 
-.marquee-track {
-  animation-name: marquee;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  will-change: transform;
-}
-
-.marquee-track[data-paused='true'] {
-  animation-play-state: paused;
-}
-
-/* 양끝을 흐리게 잘라 카드가 화면 밖으로 사라지는 느낌을 준다. */
-.marquee-mask {
-  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
-}
-
-/* 모달 */
-@keyframes backdrop-in {
+@keyframes slide-in {
   from {
     opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes sheet-in {
-  from {
-    opacity: 0;
-    transform: translateY(26px) scale(0.955);
+    transform: translateX(28px);
   }
   to {
     opacity: 1;
@@ -117,12 +94,19 @@ body {
   }
 }
 
-.backdrop-in {
-  animation: backdrop-in 0.26s ease-out both;
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.sheet-in {
-  animation: sheet-in 0.42s cubic-bezier(0.18, 0.85, 0.24, 1) both;
+.fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.2, 0.75, 0.3, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -130,11 +114,6 @@ body {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-  }
-
-  .marquee-track {
-    animation: none;
   }
 }

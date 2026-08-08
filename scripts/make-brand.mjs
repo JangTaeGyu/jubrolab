@@ -1,40 +1,46 @@
 /**
  * jubrolab 자체 브랜드 이미지 — 파비콘과 사이트 OG 카드.
  *
- * 사이트의 두 가지 표식을 그대로 쓴다. 바탕의 격자, 그리고 하단 독.
- *   - 파비콘  : 독에서 가운데 아이콘이 커진 순간을 세 덩어리로 줄인 것
- *   - OG 카드 : 격자 위에 제목 + 프로젝트 아이콘 8개를 실제 독 모양으로 깐 것
+ * 사이트가 관계도라서 두 이미지도 관계도의 언어를 쓴다.
+ *   - 파비콘  : 이어진 노드 셋. 16px 로 줄어도 덩어리가 붙지 않게 간격을 벌렸다.
+ *   - OG 카드 : 짙은 남색 위에 프로젝트 10개를 원둘레에 놓고 실제 공유 기술로 선을 잇는다.
  *
- * OG 카드는 public/icons/*.png 를 읽으므로 collect-icons.mjs 뒤에 돌린다.
- * 프로젝트 목록은 사이트와 같은 파일을 보므로 따로 맞춰줄 것이 없다.
+ * 선은 data/projects.ts 의 tech 를 그대로 읽어 긋는다. 없는 관계를 지어내지 않는다.
+ * public/icons/*.png 를 읽으므로 collect-icons.mjs 뒤에 돌린다.
  *
  *   npm run brand
  */
 import sharp from 'sharp';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { PROJECTS } from '../data/projects.ts';
+import { PROJECTS, SHARED_TECH } from '../data/projects.ts';
 
 const APP = path.join(process.cwd(), 'app');
 const ICONS = path.join(process.cwd(), 'public/icons');
 
-const PAPER = '#fbfaf7';
-const INK = '#15150f';
-const GRID = '#e6e3d8';
-const GRID_STRONG = '#d3cebc';
-const MUTED = '#67655c';
-const FAINT = '#9a978c';
+const VOID = '#080b16';
+const DEEP = '#0b1020';
+const MID = '#141a2e';
+const BRIGHT = '#eef1f8';
+const MUTED = '#9aa2bb';
+const FAINT = '#626b85';
+const GAME = '#ff7a52';
+const TOOL = '#5b9bff';
 
 /* ── 파비콘 ─────────────────────────────────────────────
-   독에서 가운데 아이콘이 커진 순간. 32 단위 격자에 그린다.
-   간격은 3 단위 — 16px 로 줄면 1.5px 가 되고, 이보다 좁으면 세 덩어리가 한 덩어리로 뭉친다.
-   같은 이유로 표시등 점은 넣지 않았다. 16px 에서는 얼룩으로만 보인다. */
+   가운데 큰 노드에 작은 노드 둘이 이어진 모양. 32 단위 격자에 그린다.
+   16px 로 줄면 절반이 되므로 노드 사이 간격을 3 단위(=1.5px) 이상 두어야
+   세 덩어리가 한 덩어리로 뭉치지 않는다. */
 const mark = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" rx="7" fill="${INK}"/>
-  <g fill="${PAPER}">
-    <rect x="2.5"  y="17.5" width="6"   height="7"    rx="1.6"/>
-    <rect x="11.5" y="12"   width="9"   height="12.5" rx="2.4"/>
-    <rect x="23.5" y="17.5" width="6"   height="7"    rx="1.6"/>
+  <rect width="32" height="32" rx="7" fill="${DEEP}"/>
+  <g stroke="${BRIGHT}" stroke-width="2" stroke-linecap="round" opacity="0.5">
+    <path d="M15 14 L8 23"/>
+    <path d="M17 14 L25 21.5"/>
+  </g>
+  <g fill="${BRIGHT}">
+    <circle cx="16" cy="12.5" r="6"/>
+    <circle cx="7"  cy="24" r="3.6"/>
+    <circle cx="25" cy="22" r="3.6"/>
   </g>
 </svg>`;
 
@@ -52,89 +58,182 @@ console.log('✓ app/apple-icon.png');
 const W = 1200;
 const H = 630;
 
-const ICON_SIZE = 84;
-const ICON_GAP = 16;
-const DOCK_PAD = 22;
-const DOCK_W = PROJECTS.length * ICON_SIZE + (PROJECTS.length - 1) * ICON_GAP + DOCK_PAD * 2;
-const DOCK_H = ICON_SIZE + DOCK_PAD * 2;
-const DOCK_X = Math.round((W - DOCK_W) / 2);
-const DOCK_Y = 630 - 40 - DOCK_H;
+const CX = 872;
+const CY = 316;
+const R_OUT = 214; // 프로젝트가 놓이는 원
+const R_IN = 88; // 기술이 놓이는 원
+const ICON_SIZE = 66;
 
-/** 아이콘이 놓일 x 좌표. 순서는 data/projects.ts 를 그대로 따른다. */
-const iconX = (i) => DOCK_X + DOCK_PAD + i * (ICON_SIZE + ICON_GAP);
-
-/** 두 자리로 맞춘다. 프로젝트가 10개를 넘어가면 '010' 이 되던 자리다. */
 const pad = (n) => String(n).padStart(2, '0');
+const shared = SHARED_TECH.map((s) => s.tag);
+
+/** 프로젝트 i 의 자리. 12시에서 시계방향. */
+const projectAt = (i) => {
+  const a = (i / PROJECTS.length) * Math.PI * 2 - Math.PI / 2;
+  return { x: CX + Math.cos(a) * R_OUT, y: CY + Math.sin(a) * R_OUT };
+};
+/** 기술 태그의 자리. 안쪽 원에 고르게. 살짝 돌려 선이 겹치지 않게 한다. */
+const techAt = (tag) => {
+  const i = shared.indexOf(tag);
+  const a = (i / shared.length) * Math.PI * 2 - Math.PI / 2 + 0.31;
+  return { x: CX + Math.cos(a) * R_IN, y: CY + Math.sin(a) * R_IN };
+};
+
+const edges = PROJECTS.flatMap((p, i) =>
+  p.tech
+    .filter((t) => shared.includes(t))
+    .map((t) => ({ from: projectAt(i), to: techAt(t), group: p.group })),
+);
 
 const total = pad(PROJECTS.length);
 const live = pad(PROJECTS.filter((p) => p.status === 'live').length);
 const games = pad(PROJECTS.filter((p) => p.group === 'game').length);
 const tools = pad(PROJECTS.filter((p) => p.group === 'tool').length);
 
+
+/** 육각 벌집 타일. 사이트 배경(globals.css)과 같은 기하다.
+    육각형은 평면을 빈틈없이 채우므로 타일 하나로 이음매가 맞는다. */
+const BALL_R = 26;
+const SQ3 = Math.sqrt(3);
+const BALL_W = 6 * BALL_R;
+const BALL_H = 2 * SQ3 * BALL_R;
+
+const ring = (cx, cy, n, rad, rot) =>
+  [...Array(n)]
+    .map((_, i) => {
+      const a = rot + (i * Math.PI * 2) / n;
+      return `${(cx + Math.cos(a) * rad).toFixed(2)},${(cy + Math.sin(a) * rad).toFixed(2)}`;
+    })
+    .join(' ');
+
+const ballCells = [];
+for (let col = -1; col <= 5; col++)
+  for (let row = -1; row <= 3; row++)
+    ballCells.push({
+      col,
+      row,
+      x: col * 1.5 * BALL_R,
+      y: row * SQ3 * BALL_R + (((col % 2) + 2) % 2) * (SQ3 * BALL_R) / 2,
+    });
+
+
+const ballHexes = ballCells
+  .map((c) => `<polygon points="${ring(c.x, c.y, 6, BALL_R, 0)}"/>`)
+  .join('');
+
 const board = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
-    <pattern id="fine" width="32" height="32" patternUnits="userSpaceOnUse">
-      <path d="M32 0H0V32" fill="none" stroke="${GRID}" stroke-width="1"/>
-    </pattern>
-    <pattern id="major" width="160" height="160" patternUnits="userSpaceOnUse">
-      <path d="M160 0H0V160" fill="none" stroke="${GRID_STRONG}" stroke-width="1"/>
-    </pattern>
-    <radialGradient id="vignette" cx="0.5" cy="0.4" r="0.72">
-      <stop offset="0.3" stop-color="${PAPER}" stop-opacity="0"/>
-      <stop offset="1" stop-color="${PAPER}" stop-opacity="0.78"/>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${MID}"/><stop offset="0.55" stop-color="${DEEP}"/><stop offset="1" stop-color="${VOID}"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#5668be" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#5668be" stop-opacity="0"/>
     </radialGradient>
+    <pattern id="ball" width="${BALL_W}" height="${BALL_H.toFixed(2)}" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#ffffff" stroke-width="1">${ballHexes}</g>
+    </pattern>
+    <!-- 관계도가 앉는 오른쪽만 비운다. 카드가 좌우로 갈려 있어
+         가운데를 비우면 패턴이 구석에만 남아 안 보인다. -->
+    <!-- SVG 마스크는 CSS 의 mask-image 와 달리 알파가 아니라 휘도로 판단한다.
+         흰 곳이 보이고 검은 곳이 가려진다. 검정 스톱만 쓰면 전부 사라진다. -->
+    <radialGradient id="ballfade" cx="${(CX / W).toFixed(3)}" cy="${(CY / H).toFixed(3)}" r="0.5">
+      <stop offset="0.34" stop-color="#000000"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </radialGradient>
+    <mask id="ballmask">
+      <rect width="${W}" height="${H}" fill="url(#ballfade)"/>
+    </mask>
   </defs>
 
-  <rect width="${W}" height="${H}" fill="${PAPER}"/>
-  <rect width="${W}" height="${H}" fill="url(#fine)"/>
-  <rect width="${W}" height="${H}" fill="url(#major)"/>
-  <rect width="${W}" height="${H}" fill="url(#vignette)"/>
+  <rect width="${W}" height="${H}" fill="url(#sky)"/>
+  <circle cx="${CX}" cy="${CY}" r="336" fill="url(#halo)"/>
+
+  <!-- 육각 벌집. 가운데는 비워 관계도와 제목이 묻히지 않게 한다. -->
+  <!-- 0.13 — 왼쪽 작은 모노 글자와 밝기가 겹치지 않는 선. -->
+  <g mask="url(#ballmask)" opacity="0.13">
+    <rect width="${W}" height="${H}" fill="url(#ball)"/>
+  </g>
+
+  <!-- 실제 공유 기술로 이은 선 -->
+  <g stroke-width="1.2">
+    ${edges
+      .map(
+        (e) =>
+          `<path d="M${e.from.x.toFixed(1)} ${e.from.y.toFixed(1)} L${e.to.x.toFixed(1)} ${e.to.y.toFixed(
+            1,
+          )}" stroke="${e.group === 'game' ? GAME : TOOL}" stroke-opacity="0.32"/>`,
+      )
+      .join('')}
+  </g>
+
+  <!-- 기술 노드 -->
+  ${shared
+    .map((tag) => {
+      const { x, y } = techAt(tag);
+      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(
+        1,
+      )}" r="7" fill="#ffffff" fill-opacity="0.1" stroke="#ffffff" stroke-opacity="0.34" stroke-width="1.2"/>`;
+    })
+    .join('')}
 
   <!-- 머리말 -->
-  <g font-family="ui-monospace, Menlo, monospace" font-size="17" letter-spacing="4.6" fill="${FAINT}">
-    <text x="64" y="72">JUBROLAB.DEV</text>
-    <text x="${W - 64}" y="72" text-anchor="end">SIDE PROJECTS · 2024 — 2026</text>
-  </g>
-  <rect x="64" y="94" width="${W - 128}" height="1" fill="${GRID_STRONG}"/>
+  <text x="64" y="70" font-family="ui-monospace, Menlo, monospace" font-size="16"
+        letter-spacing="4.2" fill="${FAINT}">JUBROLAB.DEV</text>
+  <rect x="64" y="92" width="470" height="1" fill="#ffffff" fill-opacity="0.12"/>
 
   <!-- 제목 -->
-  <g text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" fill="${INK}">
-    <text x="${W / 2}" y="200" font-size="72" font-weight="800" letter-spacing="-2.8">아이디어를 현실로 만드는</text>
-    <text x="${W / 2}" y="282" font-size="72" font-weight="800" letter-spacing="-2.8">1인 개발 연구실</text>
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" fill="${BRIGHT}">
+    <text x="64" y="212" font-size="58" font-weight="800" letter-spacing="-2.2">아이디어를 현실로</text>
+    <text x="64" y="280" font-size="58" font-weight="800" letter-spacing="-2.2">만드는 1인 개발 연구실</text>
   </g>
-  <text x="${W / 2}" y="336" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
-        font-size="24" fill="${MUTED}">AI · 교육 · 게임 · 개발자 도구 — 실험하고 운영하는 사이드 프로젝트 ${PROJECTS.length}개</text>
+  <text x="64" y="336" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21"
+        fill="${MUTED}">AI · 교육 · 게임 · 개발자 도구 — 사이드 프로젝트 ${PROJECTS.length}개</text>
 
-  <!-- 수치. 구분자를 본문보다 옅게 두면 이 크기에서는 사라져 단어가 붙어 보인다. 한 색으로 간다. -->
-  <text x="${W / 2}" y="390" text-anchor="middle"
-        font-family="ui-monospace, Menlo, monospace" font-size="16" letter-spacing="3.2" fill="${FAINT}"
+  <!-- 수치. 구분자를 본문보다 옅게 두면 이 크기에서는 사라져 단어가 붙어 보인다. -->
+  <!-- 오른쪽 관계도에 물리지 않게 글자 폭을 좁게 잡는다. -->
+  <text x="64" y="398" font-family="ui-monospace, Menlo, monospace" font-size="14"
+        letter-spacing="1.7" fill="${FAINT}"
         >PROJECTS&#160;${total}&#160;&#160;·&#160;&#160;LIVE&#160;${live}&#160;&#160;·&#160;&#160;GAMES&#160;${games}&#160;&#160;·&#160;&#160;TOOLS&#160;${tools}</text>
 
-  <!-- 독 판 -->
-  <rect x="${DOCK_X}" y="${DOCK_Y}" width="${DOCK_W}" height="${DOCK_H}" rx="26"
-        fill="#ffffff" fill-opacity="0.86" stroke="#e2dfd5" stroke-width="1"/>
+  <!-- 범례 -->
+  <g font-family="ui-monospace, Menlo, monospace" font-size="14" letter-spacing="1.6" fill="${FAINT}">
+    <circle cx="70" cy="474" r="5" fill="${GAME}"/><text x="86" y="479">게임</text>
+    <circle cx="152" cy="474" r="5" fill="${TOOL}"/><text x="168" y="479">도구</text>
+    <circle cx="234" cy="474" r="5" fill="#ffffff" fill-opacity="0.24"/><text x="250" y="479">공유 기술 ${shared.length}</text>
+  </g>
 </svg>`;
 
 const icons = await Promise.all(
   PROJECTS.map(async (project, i) => {
-    // 독 아이콘과 같은 모서리 둥글기(24%)로 잘라낸다.
-    const r = Math.round(ICON_SIZE * 0.24);
-    const rounded = Buffer.from(
+    const { x, y } = projectAt(i);
+    const r = Math.round(ICON_SIZE / 2);
+    // 원형으로 잘라 노드처럼 보이게 한다
+    const round = Buffer.from(
       `<svg xmlns="http://www.w3.org/2000/svg" width="${ICON_SIZE}" height="${ICON_SIZE}">
-         <rect width="${ICON_SIZE}" height="${ICON_SIZE}" rx="${r}" ry="${r}" fill="#fff"/>
+         <circle cx="${r}" cy="${r}" r="${r}" fill="#fff"/>
        </svg>`,
     );
     const input = await sharp(path.join(ICONS, `${project.id}.png`))
       .resize(ICON_SIZE, ICON_SIZE)
-      .composite([{ input: rounded, blend: 'dest-in' }])
+      .composite([{ input: round, blend: 'dest-in' }])
       .png()
       .toBuffer();
-    return { input, left: iconX(i), top: DOCK_Y + DOCK_PAD };
+    return { input, left: Math.round(x - r), top: Math.round(y - r) };
   }),
 );
 
+/** 아이콘 둘레의 테. 게임은 주황, 도구는 파랑 — 사이트와 같은 규칙. */
+const rings = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
+  ${PROJECTS.map((p, i) => {
+    const { x, y } = projectAt(i);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${ICON_SIZE / 2 + 3}"
+      fill="none" stroke="${p.group === 'game' ? GAME : TOOL}" stroke-width="2.4"/>`;
+  }).join('')}
+</svg>`;
+
 await sharp(Buffer.from(board))
-  .composite(icons)
+  .composite([...icons, { input: Buffer.from(rings), left: 0, top: 0 }])
   .png()
   .toFile(path.join(APP, 'opengraph-image.png'));
 console.log('✓ app/opengraph-image.png');
