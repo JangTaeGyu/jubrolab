@@ -1,5 +1,13 @@
 @import 'tailwindcss';
 
+/* 자리가 좁은 화면. 전화기는 세워도(폭이 없다) 눕혀도(높이가 없다) 글과 관계도를 나란히
+   놓을 자리가 없어 같은 배치를 쓴다 — 그래서 sm 대신 이 둘로 가른다.
+   graph.tsx 의 matchMedia 가 같은 조건을 다시 적는다. 한쪽만 고치면 물리와 배치가 어긋난다. */
+@custom-variant compact (@media (max-width: 639.98px), (max-height: 559.98px));
+@custom-variant roomy (@media (min-width: 640px) and (min-height: 560px));
+/* 눕힌 전화기. 위아래로 글 한 줄이 아쉬워 설명을 통째로 접는 자리다. */
+@custom-variant short (@media (max-height: 559.98px));
+
 @theme {
   /* 딥 네이비 — 관계도는 선이 주역이라 어두운 바탕에서 가장 읽힌다.
      아이콘 11개가 이미 모든 색을 가지고 있으니 바탕은 무채색으로 물러선다. */
