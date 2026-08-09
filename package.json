@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "glyphs": "node --experimental-strip-types --no-warnings scripts/make-glyphs.mjs",
     "og": "node scripts/make-og.mjs",
     "icons": "node scripts/collect-icons.mjs",
     "brand": "node --experimental-strip-types --no-warnings scripts/make-brand.mjs"
@@ -24,6 +25,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "sharp": "^0.35.3",
+    "simple-icons": "^16.28.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

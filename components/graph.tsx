@@ -788,12 +788,12 @@ function label(ctx: CanvasRenderingContext2D, text: string, x: number, y: number
 /* Path2D 는 필터 칩과 같은 path 문자열을 그대로 먹는다. 태그마다 한 번만 만들어 들고 있는다 —
    매 프레임 새로 만들면 노드 열 개 × 60fps 만큼 버려진다.
    Path2D 는 브라우저에만 있으므로 만드는 시점이 draw 안이어야 한다(이 파일도 서버에서 한 번 렌더된다). */
-const GLYPHS = new Map<TechTag, { path: Path2D; rotate?: number; fill?: boolean }[]>();
+const GLYPHS = new Map<TechTag, Path2D>();
 
 function glyphOf(tag: TechTag) {
   let made = GLYPHS.get(tag);
   if (!made) {
-    made = TECH_ICONS[tag].map((g) => ({ path: new Path2D(g.d), rotate: g.rotate, fill: g.fill }));
+    made = new Path2D(TECH_ICONS[tag]);
     GLYPHS.set(tag, made);
   }
   return made;
@@ -813,23 +813,10 @@ function drawGlyph(
   ctx.translate(x, y);
   ctx.scale(s, s);
   ctx.translate(-GLYPH_BOX / 2, -GLYPH_BOX / 2);
-  ctx.strokeStyle = hot > 0.4 ? C.bright : 'rgba(255,255,255,.6)';
-  ctx.fillStyle = ctx.strokeStyle;
-  // 글리프 좌표계 안의 굵기다. 작은 노드에서 1.9 × 0.66 ≈ 1.3px 로 얇아진다.
-  ctx.lineWidth = 1.9;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  glyphOf(tag).forEach((g) => {
-    if (g.rotate) {
-      ctx.save();
-      ctx.translate(12, 12);
-      ctx.rotate((g.rotate * Math.PI) / 180);
-      ctx.translate(-12, -12);
-    }
-    if (g.fill) ctx.fill(g.path);
-    else ctx.stroke(g.path);
-    if (g.rotate) ctx.restore();
-  });
+  ctx.fillStyle = hot > 0.4 ? C.bright : 'rgba(255,255,255,.6)';
+  // 구멍(액자 안·게임패드 십자)은 감긴 방향으로 뚫는다. 기본값 nonzero 를 그대로 쓴다 —
+  // evenodd 로 채우면 서브패스가 겹치는 로고에 없던 구멍이 생긴다.
+  ctx.fill(glyphOf(tag));
   ctx.restore();
 }
 

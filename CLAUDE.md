@@ -25,14 +25,17 @@ npx tsc --noEmit     # 변경 후 이 둘은 항상 통과시켜 둔다
 패널용 상세 목록이라 `tech` 보다 자세하다 — 둘이 어긋나면 관계도가 거짓말을 한다.
 
 `TechTag` 를 새로 만들면 `data/tech-icons.ts` 의 `TECH_ICONS` 가 `Record<TechTag, …>`
-라서 글리프를 함께 그려야 타입이 통과한다. 이건 실수가 아니라 잊지 않게 하려는 장치다.
+라서 글리프가 함께 있어야 타입이 통과한다. 이건 실수가 아니라 잊지 않게 하려는 장치다.
+글리프는 손으로 그리지 않고 `npm run glyphs` 로 굽는다 — simple-icons 에 있으면
+`scripts/make-glyphs.mjs` 의 `SLUG` 에 슬러그만 적고, 없으면 `DRAWN` 에 직접 그린다.
 
 ## 파일의 책임
 
 | 파일 | 책임 |
 | --- | --- |
 | `components/graph.tsx` | 힘 시뮬레이션(step) · 캔버스 렌더(draw) · 입력 · 필터 · 상세 패널 |
-| `data/tech-icons.ts` | 기술 글리프 path. 칩은 `<svg>`, 캔버스는 `Path2D` — **같은 문자열** |
+| `data/tech-icons.ts` | **생성물.** 기술 글리프 path — 칩(`<svg>`)과 캔버스(`Path2D`)가 같은 문자열 |
+| `scripts/make-glyphs.mjs` | 그 글리프를 굽는다. 로고는 simple-icons, 없는 것은 `DRAWN` |
 | `app/globals.css` | 색·글꼴 토큰과 바탕 세 겹. 패턴 SVG 는 base64 로 박아둔다 |
 | `app/page.tsx` | 바탕 겹치는 순서 = DOM 순서(`.hive` → `::before` 테두리 → `.veil`) |
 | `data/site.ts` | 배포 도메인 한 줄. OG · canonical · sitemap · robots 가 전부 여기를 본다 |
@@ -43,7 +46,11 @@ npx tsc --noEmit     # 변경 후 이 둘은 항상 통과시켜 둔다
 - **주석은 '왜'를 적는다.** 무엇을 하는지는 코드가 말한다. 한국어로, 시도해보고 버린
   선택까지 남긴다("빛무리를 넣어보니 노드 발광과 겹쳐 서로를 깎았다"). 커밋 메시지도 같다.
 - **생성물은 손으로 고치지 않는다.** `public/icons` · `public/og` · `app/icon.svg` ·
-  `globals.css` 의 base64 패턴은 스크립트를 고쳐 다시 굽는다.
+  `data/tech-icons.ts` · `globals.css` 의 base64 패턴은 스크립트를 고쳐 다시 굽는다.
+- **아이콘 라이브러리는 path 문자열을 주는 것만 쓴다.** 글리프는 칩(`<svg>`)과 캔버스
+  (`Path2D`)가 함께 쓰는데 `Path2D` 는 `d` 문자열만 먹는다. react-icons · lucide 처럼
+  컴포넌트를 주는 라이브러리는 캔버스 쪽에서 못 쓴다. 그리고 런타임 의존성으로 두지 않고
+  구워 넣는다 — 화면이 켜질 때 아이콘 꾸러미를 들고 올 이유가 없다.
 - **캔버스는 CSS 변수를 못 읽는다.** 그래서 `graph.tsx` 상단 `C` 에 색이 한 번 더 있다.
   `globals.css` 의 값을 바꾸면 여기도 같이 바꾼다.
 - 커밋은 요청받았을 때만 하고, 서명·`Co-Authored-By` 트레일러를 넣지 않는다.

@@ -38,9 +38,10 @@ npx tsc --noEmit
 
 ## 생성물
 
-이미지와 배경 패턴은 손으로 고치지 않고 스크립트로 다시 굽는다.
+이미지와 배경 패턴, 기술 글리프는 손으로 고치지 않고 스크립트로 다시 굽는다.
 
 ```bash
+npm run glyphs   # 기술 글리프 → data/tech-icons.ts (simple-icons + 없는 것은 직접 그림)
 npm run icons    # 각 프로젝트 저장소의 앱 아이콘 → public/icons/*.png (512 정규화)
 npm run og       # 저장소에 OG 이미지가 없는 셋을 만든다 → public/og/
 npm run brand    # 파비콘(app/icon.svg)과 사이트 OG 카드
@@ -66,7 +67,7 @@ components/
 data/
   site.ts         배포 도메인(https://jubrolab.dev). 절대 주소는 전부 여기서 나온다
   projects.ts     프로젝트 11개와 공유 태그
-  tech-icons.ts   기술 글리프의 path — 칩(SVG)과 캔버스(Path2D)가 같은 문자열을 쓴다
+  tech-icons.ts   기술 글리프의 path(생성물) — 칩(SVG)과 캔버스(Path2D)가 같은 문자열을 쓴다
 design/           초기 시안 5종(정적 HTML). 05-graph 가 지금 사이트가 됐다
 scripts/          생성물을 굽는 스크립트
 reference/DATA.md 각 프로젝트의 주소와 로컬 저장소 경로
@@ -86,9 +87,12 @@ reference/DATA.md 각 프로젝트의 주소와 로컬 저장소 경로
 - **흔들림은 힘이 아니라 그릴 때만.** 힘으로 밀면 스프링이 물고 늘어져 배치 전체가
   천천히 떠내려간다. 물리는 그대로 수렴시키고 렌더 좌표만 ±3.6px 어긋낸다.
   `prefers-reduced-motion` 이면 넣지 않는다.
-- **기술 글리프는 직접 그렸다.** 브랜드 로고 path 를 베끼지 않고, 저장소에 아이콘이
-  없는 프로젝트를 그릴 때와 같은 방식으로 그린다. Canvas · LLM 은 애초에 로고가 없는
-  태그라 뜻(액자 · 반짝임)으로 그렸다.
+- **기술 글리프는 진짜 로고를 구워 넣는다.** 직접 그리다가 simple-icons 로 옮겼다 —
+  칩과 캔버스가 같은 path 문자열을 쓰는데, 이 라이브러리가 24 상자의 `d` 하나를 그대로
+  주기 때문이다(컴포넌트를 주는 react-icons · lucide 는 캔버스에서 못 쓴다). 다섯은
+  여전히 직접 그린다: 로고가 없는 Phaser · LLM, 슬러그가 딴것(교육 LMS)인 Canvas,
+  그리고 로고가 있어도 제 일을 못 하는 둘 — PWA 는 로고가 'PWA' 글자라 라벨 옆에서
+  겹치고, Supabase 는 번개라 바로 옆 Vite 와 갈리지 않는다.
 
 ## 배포
 

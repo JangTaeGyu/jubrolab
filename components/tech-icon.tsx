@@ -7,24 +7,10 @@ export function TechIcon({ tag, className }: { tag: TechTag; className?: string 
     <svg
       viewBox={`0 0 ${GLYPH_BOX} ${GLYPH_BOX}`}
       className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.9}
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
       aria-hidden="true"
     >
-      {TECH_ICONS[tag].map((g, i) =>
-        g.fill ? (
-          <path key={i} d={g.d} fill="currentColor" stroke="none" />
-        ) : (
-          <path
-            key={i}
-            d={g.d}
-            transform={g.rotate ? `rotate(${g.rotate} 12 12)` : undefined}
-          />
-        ),
-      )}
+      <path d={TECH_ICONS[tag]} />
     </svg>
   );
 }
