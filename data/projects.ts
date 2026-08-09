@@ -8,10 +8,11 @@ export type ProjectStatus = 'live' | 'building' | 'ended';
 /**
  * 관계도가 선을 잇는 태그. 여러 프로젝트가 나눠 쓰는 것만 여기에 둔다.
  *
- * 여기 있는 열 개는 전부 '돌아가는 앱이 올라탄 것'이다. 만들 때만 쓴 도구는 넣지 않는다 —
- * Python 이 그래서 빠져 있다. AI Stock Analyzer 는 통째로 파이썬이지만, Impastile 쪽은
- * 그림에서 데이터를 뽑는 빌드 스크립트 하나라 배포본에는 없다. 개수로는 둘이라 태그가 될 수
- * 있지만, 그 선을 이으면 "같은 기술을 쓴다"가 헐거워진다. 둘은 `stack` 에만 남긴다.
+ * Python 은 '돌아가는 앱이 올라탄 것' 이라는 다른 열 개의 기준에서 한 발 벗어나 있다.
+ * AI Stock Analyzer 는 통째로 파이썬이지만(main.py · src/*.py · requirements.txt),
+ * Impastile 쪽은 그림에서 데이터를 뽑는 scripts/extract-painting.py 하나라 배포본에는
+ * 없다. 그래도 넣기로 했다 — 무엇으로 만들었는지도 "같은 것을 쓴다"에 든다. 태그를 세는
+ * 규칙(둘 이상)은 그대로라, 셋째가 나타나지 않는 한 이 선은 둘 사이에만 남는다.
  */
 export type TechTag =
   | 'Next.js'
@@ -23,7 +24,8 @@ export type TechTag =
   | 'Supabase'
   | 'PWA'
   | 'Canvas'
-  | 'LLM';
+  | 'LLM'
+  | 'Python';
 
 export type Project = {
   id: string;
@@ -188,7 +190,7 @@ export const PROJECTS: Project[] = [
       'Playwright 로 HTML 리포트를 PNG 로도 구웠다. 공유가 쉬워야 보니까',
       'APScheduler 로 매일 정해진 시각에 배치를 돌렸다',
     ],
-    tech: ['LLM', 'Supabase'],
+    tech: ['LLM', 'Supabase', 'Python'],
     stack: [
       { area: '언어', items: ['Python 3.9+'] },
       { area: '데이터', items: ['yfinance', 'Finnhub', 'FRED', 'pandas · numpy'] },
@@ -368,7 +370,9 @@ export const PROJECTS: Project[] = [
       '공유 카드는 같은 렌더 규칙을 SVG 로 한 번 구운 것이다. 화면과 다른 그림이 나가지 않는다',
       '원화는 Wikimedia Commons 의 퍼블릭 도메인 스캔. 뽑아낸 것은 저해상도 색상 맵과 방향장이다',
     ],
-    tech: ['Next.js', 'React', 'TypeScript', 'Canvas'],
+    /* Python 은 배포본이 아니라 만드는 쪽에 있다 — scripts/extract-painting.py 가
+       원화에서 색상 맵과 방향장을 뽑아 번들에 넣는다. 화면에서 도는 것은 아니다. */
+    tech: ['Next.js', 'React', 'TypeScript', 'Canvas', 'Python'],
     stack: [
       { area: '프레임워크', items: ['Next.js 16 (App Router)', 'React 19', 'TypeScript'] },
       { area: '스타일', items: ['전역 CSS 한 장'] },
