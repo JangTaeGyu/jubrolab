@@ -33,6 +33,11 @@ const SOURCES = {
  * stock-analyzer 는 CLI 라 앱 아이콘이 없다. 이 도구의 성격("초기 종목 발굴 및
  * 스크리닝")대로 돋보기로 그리고, 색은 리포트 템플릿의 남색·청록을 따른다.
  * 같은 주식 분야인 TickerBrief 아이콘이 막대 차트라 모티프를 일부러 다르게 뒀다.
+ *
+ * koda-cli 도 CLI 다. 이쪽은 화면이 있긴 한데 터미널이라, 그 터미널을 그린다 —
+ * 시안 라운드 보더는 이 도구의 입력창이 실제로 쓰는 색이다(components/InputBox.js).
+ * 프롬프트 기호는 저장소가 어시스턴트 표시로 쓰는 '●' 를 따랐다. 같은 남색 계열인
+ * stock-analyzer 와는 테두리 유무와 시안으로 갈린다.
  */
 const DRAWN = {
   'stock-analyzer': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
@@ -46,6 +51,21 @@ const DRAWN = {
           stroke-linecap="round" stroke-linejoin="round"/>
     <circle cx="27" cy="27" r="14.5" fill="none" stroke="#34d399" stroke-width="4.5"/>
     <path d="M37.6 37.6 L49 49" stroke="#26a69a" stroke-width="6.5" stroke-linecap="round"/>
+  </svg>`,
+
+  'koda-cli': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+    <defs>
+      <linearGradient id="term" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#141a24"/><stop offset="1" stop-color="#0a0e16"/>
+      </linearGradient>
+    </defs>
+    <rect width="64" height="64" rx="14" fill="url(#term)"/>
+    <!-- 입력창 — 실제 UI 의 cyan round 보더. 아이콘이 29px 로 줄어도 이 테두리가 형태를 잡는다 -->
+    <rect x="9.5" y="13.5" width="45" height="37" rx="9" fill="none" stroke="#22d3ee" stroke-width="3"/>
+    <!-- 프롬프트 기호와 커서. 둘 사이를 비워야 '입력을 기다린다'로 읽힌다 -->
+    <path d="M19 25.5 L26.5 32 L19 38.5" fill="none" stroke="#22d3ee" stroke-width="4"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="32" y="28.5" width="13" height="7" rx="2" fill="#e8f6fb"/>
   </svg>`,
 };
 

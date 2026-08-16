@@ -2,10 +2,11 @@
  * 저장소에 OG 이미지가 없는 프로젝트의 카드를 만든다.
  *
  * 나머지는 원본 프로젝트의 파일을 그대로 복사해 `public/og/` 에 두었다.
- * 여기서 만드는 셋은 각 프로젝트의 실제 재료를 쓴다 — 없는 그림을 지어내지 않는다.
+ * 여기서 만드는 넷은 각 프로젝트의 실제 재료를 쓴다 — 없는 그림을 지어내지 않는다.
  *   - Specast        : 저장소의 브랜드 마크(네 소스가 하나의 SPEC 으로 수렴)를 확대
  *   - Vanguard       : 게임이 실제로 쓰는 Tiny Swords 타일셋 + 유닛 스프라이트 합성
  *   - Stock Analyzer : CLI 라 화면이 없어, 이 도구가 뱉는 리포트의 생김새를 축약
+ *   - Koda CLI       : 화면이 터미널이라, 그 터미널을 그린다 (역할 접두사·보더 색 그대로)
  *
  * 원본 프로젝트에 opengraph-image 가 생기면 이 스크립트 대신 그 파일을 복사하면 된다.
  *
@@ -269,3 +270,79 @@ const analyzer = `
 
 await sharp(Buffer.from(analyzer)).png().toFile(path.join(OUT, 'stock-analyzer.png'));
 console.log('✓ stock-analyzer.png');
+
+/* ────────────────────────────────────────────────────────────
+   Koda CLI — 터미널 화면을 그대로 축약
+   이쪽도 배포된 웹 화면이 없지만, 화면 자체가 터미널이라 지어낼 것이 없다.
+   역할 접두사("> " 사용자 · "● " 어시스턴트 · "⎿" 도구)와 cyan 라운드 보더,
+   하단 상태줄(cwd · model · agent:mode · ~tokens)은 README §3 의 구성 그대로다.
+   한글은 Menlo 에 글리프가 없어 sans 로 떨어진다. 그래서 한 줄 안에서 글꼴이
+   갈리지 않도록 말은 한글로만, 도구 줄은 ASCII 로만 적었다. 접두사도 '⎿' 대신
+   상자 그리기 문자를 쓴다 — 앞의 것은 Menlo 에 없어 세로 막대 하나로 떨어진다.
+   ──────────────────────────────────────────────────────────── */
+const MONO = 'ui-monospace, Menlo, Helvetica Neue, Helvetica, Arial, sans-serif';
+const SANS = 'Helvetica Neue, Helvetica, Arial, sans-serif';
+const INK = '#0a0e16';
+const CYAN = '#22d3ee';
+const PAPER = '#e6edf3';
+const GRAY = '#7b8698';
+const LIME = '#4ade80';
+
+/**
+ * 대화 한 줄. 접두사와 본문의 색이 다르다 — 실제 화면이 그렇게 읽힌다.
+ * 접두사 폭은 글자 수로 재지 않고 자리를 고정한다. '&gt;' 같은 엔티티는 글자 수가
+ * 실제 폭과 다르고, 도구 줄은 한 칸 더 들어가야 대화에 딸린 것으로 읽힌다.
+ */
+const line = (y, prefix, prefixColor, body, bodyColor, indent = 0) => `
+  <text x="${112 + indent}" y="${y}" font-family="${MONO}" font-size="23" fill="${prefixColor}">${prefix}</text>
+  <text x="${150 + indent}" y="${y}" font-family="${MONO}" font-size="23"
+        fill="${bodyColor}">${body}</text>`;
+
+const koda = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <defs>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111725"/><stop offset="1" stop-color="#0b101a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="${W}" height="${H}" fill="${INK}"/>
+  <!-- 스캔선 대신 옅은 격자. 스캔선은 축소된 카드에서 모아레가 진다 -->
+  <g stroke="#ffffff" stroke-opacity="0.032">
+    ${Array.from({ length: 24 }, (_, i) => `<path d="M${i * 50} 0V${H}"/>`).join('')}
+    ${Array.from({ length: 13 }, (_, i) => `<path d="M0 ${i * 50}H${W}"/>`).join('')}
+  </g>
+
+  <!-- 머리말 -->
+  <g font-family="${MONO}" font-size="17" letter-spacing="3.4" fill="${GRAY}">
+    <text x="72" y="80">KODA CLI</text>
+    <text x="${W - 72}" y="80" text-anchor="end" fill="${CYAN}">v0.1.0 · MIT</text>
+  </g>
+  <rect x="72" y="102" width="${W - 144}" height="1" fill="#1e2838"/>
+
+  <text x="72" y="184" font-family="${SANS}" font-size="62" font-weight="800"
+        letter-spacing="-2.2" fill="${PAPER}">내 컴퓨터 안에서만 도는 코딩 에이전트</text>
+  <text x="72" y="232" font-family="${SANS}" font-size="24" fill="${GRAY}">OpenAI 호환 백엔드 · 도구 13종 · 5단계 권한 · MCP · 서브에이전트</text>
+
+  <!-- 터미널 — 입력창과 같은 cyan 라운드 보더 -->
+  <rect x="72" y="278" width="${W - 144}" height="284" rx="18"
+        fill="url(#screen)" stroke="${CYAN}" stroke-opacity="0.55" stroke-width="2"/>
+
+  ${line(330, '&gt;', PAPER, '이 저장소 구조를 요약해줘', GRAY)}
+  ${line(376, '●', CYAN, '진입점부터 봅니다.', PAPER)}
+  ${line(418, '└─', GRAY, 'ls("src") → 14 dirs, 74 files', GRAY, 22)}
+  ${line(456, '└─', GRAY, 'read_file("src/core/agent-loop.mjs") → 612 lines', GRAY, 22)}
+  ${line(500, '●', CYAN, '에이전트 루프가 화면을 모릅니다. 떼어 써도 됩니다.', PAPER)}
+
+  <!-- 상태줄 -->
+  <rect x="72" y="524" width="${W - 144}" height="1" fill="#1e2838"/>
+  <g font-family="${MONO}" font-size="18" letter-spacing="1.2" fill="${GRAY}">
+    <text x="112" y="552">~/koda-cli</text>
+    <text x="286" y="552">qwen3-coder:30b</text>
+    <text x="530" y="552">agent:auto-edit</text>
+    <text x="${W - 112}" y="552" text-anchor="end" fill="${LIME}">~18.2k (56%)</text>
+  </g>
+</svg>`;
+
+await sharp(Buffer.from(koda)).png().toFile(path.join(OUT, 'koda-cli.png'));
+console.log('✓ koda-cli.png');

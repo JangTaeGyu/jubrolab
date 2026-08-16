@@ -1,6 +1,8 @@
 /**
  * live     — 지금 열어볼 수 있다
- * building — 주소는 잡아뒀지만 아직 배포 전이다
+ * building — 아직 만드는 중이다. 주소만 잡아둔 것(Specast)도, 웹으로 띄울 자리가
+ *            애초에 없는 것(Koda CLI)도 여기에 든다. 어느 쪽이든 상세 패널은
+ *            여는 버튼 대신 "아직 만드는 중입니다"를 낸다
  * ended    — 만들어 운영했지만 지금은 내렸다
  */
 export type ProjectStatus = 'live' | 'building' | 'ended';
@@ -66,7 +68,7 @@ export const PROJECTS: Project[] = [
     group: 'tool',
     tagline: '토큰 15종을 한 화면에서',
     blurb:
-      'UUID v1·v4·v7, Hex, Base64, API Key, JWT 스타일 Bearer, OTP까지 15종을 카테고리로 걸러 만들고 한 번에 복사합니다. 열한 개 중 가장 작지만 가장 자주 쓰는 것입니다.',
+      'UUID v1·v4·v7, Hex, Base64, API Key, JWT 스타일 Bearer, OTP까지 15종을 카테고리로 걸러 만들고 한 번에 복사합니다. 열두 개 중 가장 작지만 가장 자주 쓰는 것입니다.',
     story:
       '토큰이 필요할 때마다 검색해서 아무 사이트에나 들어가던 게 싫어서 만들었습니다. 그래서 목표가 하나였습니다 — 열면 이미 만들어져 있고, Enter로 새로 뽑고, Ctrl+C로 복사하고 끝. 비행기에서도 열리도록 PWA로 감쌌습니다.',
     notes: [
@@ -279,7 +281,7 @@ export const PROJECTS: Project[] = [
       '컴포넌트 카탈로그가 프레임워크를 모른다 — 렌더 타깃을 갈아 끼울 수 있다',
       'LLM 키는 서버 프록시 뒤에 숨긴다. Gemini·DeepSeek·Anthropic·OpenAI·Ollama 를 갈아 쓴다',
       'API Flow — 등록한 API 를 묶거나 파이프라인으로 이어 캔버스에서 시연한다',
-      '열한 개 중 가장 오래 붙잡고 있는 것. 모노레포 9패키지',
+      '열두 개 중 가장 오래 붙잡고 있는 것. 모노레포 9패키지',
     ],
     tech: ['Next.js', 'React', 'TypeScript', 'Vite', 'Tailwind', 'Supabase', 'LLM'],
     stack: [
@@ -385,6 +387,42 @@ export const PROJECTS: Project[] = [
     icon: '/icons/impastile.png',
     status: 'live',
     url: 'https://impastile.jubrolab.dev/',
+  },
+  {
+    id: 'koda-cli',
+    name: 'Koda CLI',
+    kind: 'AGENT',
+    group: 'tool',
+    tagline: '내 컴퓨터 안에서만 도는 코딩 에이전트',
+    blurb:
+      'OpenAI 호환 엔드포인트(Ollama · vLLM · 클라우드) 아무 데나 붙는 터미널 코딩 에이전트. 도구 13종과 5단계 권한, 서브에이전트·MCP·훅·스킬까지 직접 짜 넣었습니다. 화면은 React 로 그리는데 브라우저가 아니라 터미널입니다.',
+    story:
+      '"토큰 비용이 0이면 시장이 생긴다"를 확인하려고 시작했고, 그 가설은 접었습니다. 비용 함수를 잘못 적었더군요 — 로컬 추론용 GPU 값에 감가상각과 모델 갱신 락인까지 더하면, 사용한 만큼만 내는 클라우드 쪽이 오히려 예측 가능한 비용입니다. 접은 것은 "이걸로 뭘 팔겠다"였지 도구가 아닙니다. 에이전트 루프와 권한 파이프라인을 남의 코드가 아니라 내 코드로 갖게 된 쪽이 원래 목적이었고, 그건 지금도 고치고 있습니다.',
+    notes: [
+      '모델이 도구를 텍스트로 뱉으면 받아 적는다 — 작은 모델은 tool_calls 채널을 자주 놓친다. XML · 펜스 · 점 접두사 네 형식을 파서가 되받는다',
+      '권한 판단은 한 곳에만 둔다. 붙는 곳이 넷(터미널 UI · SDK · 로컬 서버 · 헤드리스)이라 복제하면 곧 어긋난다',
+      '되돌리기는 그림자 git 에 쌓는다 — ~/.koda 아래 별도 git dir 을 두고 작업 트리만 빌려, 저장소의 .git 을 건드리지 않는다',
+      '토큰은 BPE 휴리스틱으로 세고 실측 중앙값으로 배율을 학습한다. 한글은 라틴보다 두 배 넘게 먹는다',
+      '의존성 여덟 개. 마크다운 렌더러도 직접 썼고, 에이전트 루프는 React 를 모른다',
+      '기능은 늘리지 않고 조인다 — 권한 우회 차단, 스트리밍 안정성, 미완성 응답 이어쓰기가 최근에 손댄 것들이다',
+    ],
+    /* React 를 넣은 것은 Ink 가 DOM 대신 터미널로 조정(reconcile)하기 때문이다 —
+       react 18 을 진짜 의존성으로 들고 훅과 컴포넌트로 화면을 짠다. 그리는 곳이
+       브라우저가 아닐 뿐이라, "무엇으로 UI 를 짰나"라는 관계는 그대로 성립한다.
+       TypeScript 는 넣지 않는다. 전부 .js · .mjs 다. */
+    tech: ['React', 'LLM'],
+    stack: [
+      { area: '런타임', items: ['Node.js 18+ (ESM)', 'native fetch SSE'] },
+      { area: 'UI', items: ['React 18', 'Ink 5', '자체 마크다운 → ANSI 렌더러'] },
+      { area: '에이전트', items: ['function calling + 텍스트 폴백', '내장 도구 13종', '서브에이전트(task · fork)'] },
+      { area: '백엔드', items: ['Ollama (qwen3-coder:30b)', 'vLLM', 'OpenAI · Anthropic 호환'] },
+      { area: '확장', items: ['MCP (stdio · HTTP)', 'Hooks', 'Skills', '커스텀 슬래시 명령'] },
+      { area: '안전', items: ['5단계 권한 파이프라인', 'trusted folders', 'macOS sandbox-exec', '그림자 git 체크포인트'] },
+      { area: '테스트', items: ['node:test 26개 파일 (외부 의존성 0)'] },
+    ],
+    og: '/og/koda-cli.png',
+    icon: '/icons/koda-cli.png',
+    status: 'building',
   },
 ];
 

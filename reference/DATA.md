@@ -42,6 +42,13 @@
 - https://story-hacker.jubrolab.dev/
 - /Users/jangtaegyu/Desktop/ToyProject/story-hacker
 
+## Koda CLI
+
+- [웹 배포 없음] 터미널에서 도는 CLI (`npm i -g` · `npm link`)
+- /Users/jangtaegyu/Desktop/ToyProject/koda-cli
+  - 아이콘도 OG 도 저장소에 없다. 둘 다 `collect-icons.mjs` 의 `DRAWN` 과
+    `make-og.mjs` 에서 굽는다 — Stock Analyzer 와 같은 처지다.
+
 ## Impastile
 
 - https://impastile.jubrolab.dev/
