@@ -49,6 +49,14 @@
   - 아이콘도 OG 도 저장소에 없다. 둘 다 `collect-icons.mjs` 의 `DRAWN` 과
     `make-og.mjs` 에서 굽는다 — Stock Analyzer 와 같은 처지다.
 
+## RIM RATS
+
+- https://rim-rats.jubrolab.dev/
+- /Users/jangtaegyu/Desktop/ToyProject/rim-rats
+  - 아이콘도 OG 도 저장소 안에 있다 (`assets/icon-512.png` · `assets/og.png`).
+    둘 다 `tools/gen_brand.py` 가 굽는 것이라, 원본이 바뀌면 그쪽을 먼저 다시 돌린다.
+    OG 는 파일을 그대로 `public/og/rim-rats.png` 로 복사한다.
+
 ## Impastile
 
 - https://impastile.jubrolab.dev/

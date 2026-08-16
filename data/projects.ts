@@ -12,9 +12,10 @@ export type ProjectStatus = 'live' | 'building' | 'ended';
  *
  * Python 은 '돌아가는 앱이 올라탄 것' 이라는 다른 열 개의 기준에서 한 발 벗어나 있다.
  * AI Stock Analyzer 는 통째로 파이썬이지만(main.py · src/*.py · requirements.txt),
- * Impastile 쪽은 그림에서 데이터를 뽑는 scripts/extract-painting.py 하나라 배포본에는
- * 없다. 그래도 넣기로 했다 — 무엇으로 만들었는지도 "같은 것을 쓴다"에 든다. 태그를 세는
- * 규칙(둘 이상)은 그대로라, 셋째가 나타나지 않는 한 이 선은 둘 사이에만 남는다.
+ * Impastile 과 RIM RATS 는 만드는 쪽에만 있다 — 원화에서 붓결을 뽑는
+ * scripts/extract-painting.py, 스프라이트·소리·브랜드를 굽는 tools/*.py 라 배포본에는
+ * 없다. 그래도 넣기로 했다 — 무엇으로 만들었는지도 "같은 것을 쓴다"에 든다. 둘 사이에만
+ * 남던 선인데 RIM RATS 가 셋째로 붙었다.
  */
 export type TechTag =
   | 'Next.js'
@@ -68,7 +69,7 @@ export const PROJECTS: Project[] = [
     group: 'tool',
     tagline: '토큰 15종을 한 화면에서',
     blurb:
-      'UUID v1·v4·v7, Hex, Base64, API Key, JWT 스타일 Bearer, OTP까지 15종을 카테고리로 걸러 만들고 한 번에 복사합니다. 열두 개 중 가장 작지만 가장 자주 쓰는 것입니다.',
+      'UUID v1·v4·v7, Hex, Base64, API Key, JWT 스타일 Bearer, OTP까지 15종을 카테고리로 걸러 만들고 한 번에 복사합니다. 열세 개 중 가장 작지만 가장 자주 쓰는 것입니다.',
     story:
       '토큰이 필요할 때마다 검색해서 아무 사이트에나 들어가던 게 싫어서 만들었습니다. 그래서 목표가 하나였습니다 — 열면 이미 만들어져 있고, Enter로 새로 뽑고, Ctrl+C로 복사하고 끝. 비행기에서도 열리도록 PWA로 감쌌습니다.',
     notes: [
@@ -281,7 +282,7 @@ export const PROJECTS: Project[] = [
       '컴포넌트 카탈로그가 프레임워크를 모른다 — 렌더 타깃을 갈아 끼울 수 있다',
       'LLM 키는 서버 프록시 뒤에 숨긴다. Gemini·DeepSeek·Anthropic·OpenAI·Ollama 를 갈아 쓴다',
       'API Flow — 등록한 API 를 묶거나 파이프라인으로 이어 캔버스에서 시연한다',
-      '열두 개 중 가장 오래 붙잡고 있는 것. 모노레포 9패키지',
+      '열세 개 중 가장 오래 붙잡고 있는 것. 모노레포 9패키지',
     ],
     tech: ['Next.js', 'React', 'TypeScript', 'Vite', 'Tailwind', 'Supabase', 'LLM'],
     stack: [
@@ -423,6 +424,47 @@ export const PROJECTS: Project[] = [
     og: '/og/koda-cli.png',
     icon: '/icons/koda-cli.png',
     status: 'building',
+  },
+  {
+    id: 'rim-rats',
+    name: 'RIM RATS',
+    kind: 'SPORTS',
+    group: 'game',
+    tagline: '실력을 릴리즈 타이밍 하나에 몰아준 길거리 농구',
+    blurb:
+      '8개국이 붙는 아케이드 길거리 농구. 3대3 풀코트 토너먼트(8강 → 결승)와 1대1 하프코트를 브라우저에서 바로 합니다. 스프라이트·효과음·BGM·브랜드 이미지까지 저장소 안에서 다시 구울 수 있습니다.',
+    story:
+      '물리로 림 통과를 판정하면 들어갈 것 같던 슛이 안 들어가고, 플레이어가 납득하지 못합니다. 그래서 순서를 뒤집었습니다 — 릴리즈 순간에 확률로 성공을 확정하고, 궤적을 그 결과에 맞춰 역산합니다. 거리도 수비 압박도 능력치도 상황이 주는 변수라, 플레이어가 순수하게 통제하는 것은 릴리즈 타이밍 하나만 남겼습니다. 숙련도 곡선을 거기에 몰아준 겁니다. 슈퍼슛 게이지를 공격이 아니라 수비 성공으로 채운 것도 같은 계산입니다. 뺏는 행위에 보상이 없으면 아무도 수비를 하지 않습니다.',
+    notes: [
+      '슛은 결과가 먼저고 궤적이 나중이다. 물리로 림 통과를 판정하지 않는다',
+      '같은 점프 키가 볼을 들고 있으면 슛, 아니면 블록이다 — 화면 아래 안내줄도 소유에 따라 통째로 갈아 끼워진다',
+      '게임 로직은 논리 좌표(x·y·z)로만 센다. 화면 좌표는 렌더 직전 proj() 한 곳에서만 나온다. z 축이 필요해 물리는 Arcade Physics 대신 2.5D 적분기를 직접 썼다',
+      '덩크 조건에 "수비를 벗겨냈다"를 넣기 전에는 경기당 9.1개(슛의 32%)가 덩크였다. 그 조건이 레이업의 자리를 만든다',
+      '8개국은 스탯 총합 300 고정이라 세기가 아니라 성격만 다르다. 헤드리스 시뮬로 승률을 재고, 60% 를 넘는 나라가 나오면 스탯이 아니라 밸런스 계수를 고친다',
+      '효과음 20종과 BGM 4트랙을 파이썬으로 합성했다. 표준 라이브러리만 쓰는 44.1kHz 스테레오 — 22kHz 모노에 에일리어싱을 얹으면 그게 칩튠 특유의 "삐- 뿅" 이 된다',
+    ],
+    /* Python 은 화면에서 도는 것이 아니라 굽는 쪽에 있다 — tools/*.py 가 스프라이트
+       시트를 자르고(hqx 2배), 소리를 합성하고, 파비콘·OG 카드를 세운다. 배포본에는
+       들어가지 않지만, 무엇으로 만들었는지도 관계다(위 TechTag 주석). */
+    tech: ['TypeScript', 'Phaser', 'Vite', 'Python'],
+    stack: [
+      { area: '엔진', items: ['Phaser 4.2', 'phaser4-rex-plugins (rexUI · 가상 조이스틱)'] },
+      { area: '빌드', items: ['Vite 8', 'TypeScript'] },
+      {
+        area: '핵심 로직',
+        items: ['커스텀 2.5D 적분기', '확률 → 궤적 역산(ShotResolver)', 'PlayerAI · TeamBrain', '슈퍼 게이지 · 히트스톱'],
+      },
+      { area: '조작', items: ['키보드 (리매핑 가능)', '가상패드 (터치 자동 감지)'] },
+      {
+        area: '에셋 생성',
+        items: ['Python · Pillow (스프라이트 · 브랜드)', 'hqx 2배 확대 (ffmpeg)', '자작 DSP (PolyBLEP · 상태변수 필터 · 룸 리버브)'],
+      },
+      { area: 'QA · 튜닝', items: ['Vitest 202개', 'lil-gui 밸런스 패널', '헤드리스 승률 시뮬'] },
+    ],
+    og: '/og/rim-rats.png',
+    icon: '/icons/rim-rats.png',
+    status: 'live',
+    url: 'https://rim-rats.jubrolab.dev/',
   },
 ];
 

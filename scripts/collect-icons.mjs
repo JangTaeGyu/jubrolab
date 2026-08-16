@@ -26,6 +26,7 @@ const SOURCES = {
   'token-generator': 'token-generator/public/icons/icon-384.png',
   'ticker-brief': 'ticker-brief-report/public/favicon-512.png',
   impastile: 'impastile/app/icon.svg',
+  'rim-rats': 'rim-rats/assets/icon-512.png',
 };
 
 /**
