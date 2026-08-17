@@ -44,10 +44,13 @@
 
 ## Koda CLI
 
-- [웹 배포 없음] 터미널에서 도는 CLI (`npm i -g` · `npm link`)
+- https://koda-cli.jubrolab.dev/ — 소개 페이지 한 장. 쓰는 것은 여전히 터미널이다
+  (`npm i -g git+https://github.com/JangTaeGyu/koda-cli.git`)
 - /Users/jangtaegyu/Desktop/ToyProject/koda-cli
-  - 아이콘도 OG 도 저장소에 없다. 둘 다 `collect-icons.mjs` 의 `DRAWN` 과
-    `make-og.mjs` 에서 굽는다 — Stock Analyzer 와 같은 처지다.
+  - 아이콘도 OG 도 그 소개 페이지에 딸려 저장소 안으로 들어왔다
+    (`site/favicon.svg` · `site/og.png`). 아이콘은 `collect-icons.mjs` 의 `SOURCES`
+    가 가져가고, OG 는 파일을 그대로 `public/og/koda-cli.png` 로 복사한다.
+    둘 다 여기서 그리던 것을 지웠다.
 
 ## RIM RATS
 
