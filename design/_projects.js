@@ -80,19 +80,6 @@ window.PROJECTS = [
     url: 'https://ticker-brief.jubrolab.dev/',
   },
   {
-    id: 'vanguard',
-    name: 'Chronicles of the Vanguard',
-    kind: 'STRATEGY',
-    group: 'game',
-    status: 'live',
-    tagline: '타일 위에서 굴러가는 실시간 전략',
-    blurb:
-      '경로탐색은 A*, 유닛 AI는 FSM, 시야는 셀 단위 안개. 맵과 유닛을 직접 만드는 에디터가 따로 붙어 두 앱이 같은 데이터를 봅니다.',
-    tech: ['Phaser', 'Next.js', 'React', 'TypeScript'],
-    specs: [['엔진', 'Phaser 3'], ['유닛', '24종'], ['앱', '게임 + 에디터']],
-    url: 'https://vc-rts.jubrolab.dev/',
-  },
-  {
     id: 'specast',
     name: 'Specast',
     kind: 'BUILDER',

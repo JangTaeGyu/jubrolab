@@ -58,7 +58,7 @@ export type Project = {
   status: ProjectStatus;
   /** 웹으로 띄운 적이 없는 프로젝트에는 없다. */
   url?: string;
-  /** 서비스가 둘인 프로젝트만 채운다 (Vanguard). */
+  /** 서비스가 둘인 프로젝트만 채운다. 지금은 쓰는 프로젝트가 없다. */
   secondary?: { label: string; url: string };
 };
 
@@ -233,40 +233,6 @@ export const PROJECTS: Project[] = [
     icon: '/icons/ticker-brief.png',
     status: 'ended',
     url: 'https://ticker-brief.jubrolab.dev/',
-  },
-  {
-    id: 'vanguard',
-    name: 'Chronicles of the Vanguard',
-    kind: 'STRATEGY',
-    group: 'game',
-    tagline: '타일 위에서 굴러가는 실시간 전략',
-    blurb:
-      '경로탐색은 A*, 유닛 AI는 FSM, 시야는 셀 단위 안개, 자원은 채집과 고갈까지 굴러갑니다. 맵과 유닛을 직접 만드는 에디터가 따로 붙습니다.',
-    story:
-      '게임 로직을 Phaser 밖으로 전부 밀어냈습니다. 경로탐색·충돌·시야·자원·봇은 프레임워크를 모르는 순수 패키지에 있고, Phaser는 그 결과를 그리기만 합니다. 그래서 게임을 띄우지 않고도 로직을 테스트할 수 있고, 에디터와 게임이라는 두 앱이 같은 데이터 파일 하나를 봅니다. 밸런스를 고치려고 게임을 다시 빌드할 필요가 없습니다.',
-    notes: [
-      '게임 로직이 Phaser 를 모른다 — 순수 패키지로 떼어내 게임 없이 테스트한다',
-      '에디터와 게임이 data/ 하나를 공유한다. 밸런스는 JSON 만 고치면 된다',
-      '봇에 Humanizer 를 붙여 사람처럼 실수하게 만들었다',
-      'Playwright 로 게임 플레이 시나리오 11종을 자동 검증한다',
-    ],
-    tech: ['Next.js', 'React', 'TypeScript', 'Tailwind', 'Phaser', 'Canvas', 'PWA'],
-    stack: [
-      { area: '엔진', items: ['Phaser 3.90', 'phaser3-rex-plugins'] },
-      { area: '셸', items: ['Next.js 15', 'React 19', 'TypeScript', 'Tailwind CSS 4'] },
-      { area: '핵심 로직', items: ['A* 경로탐색', 'FSM 유닛 AI', 'FogGrid 시야', 'BotBrain'] },
-      {
-        area: '에디터',
-        items: ['Canvas 2D (유닛·맵 미리보기)', '@xyflow/react', 'serwist (PWA)'],
-      },
-      { area: '구조', items: ['npm workspaces', 'zod 3 (데이터 스키마)', 'Zustand 5'] },
-      { area: 'QA', items: ['Playwright 시나리오 11종'] },
-    ],
-    og: '/og/vanguard.png',
-    icon: '/icons/vanguard.png',
-    status: 'live',
-    url: 'https://vc-rts.jubrolab.dev/',
-    secondary: { label: '맵 에디터 열기', url: 'https://vc-editor.jubrolab.dev/' },
   },
   {
     id: 'specast',
@@ -489,6 +455,39 @@ export const PROJECTS: Project[] = [
     icon: '/icons/rim-rats.png',
     status: 'live',
     url: 'https://rim-rats.jubrolab.dev/',
+  },
+  {
+    id: 'bannerholm',
+    name: 'Bannerholm',
+    kind: 'STUDIO',
+    group: 'tool',
+    tagline: '2D 게임의 규칙을 화면에서 고친다',
+    blurb:
+      '타일맵 · 유닛 · 건물 · 전투 AI 에디터 넷이 한 스튜디오에 있습니다. 유닛을 배치해 실제로 싸움을 붙여 보며 고치고, 결과는 코드가 아니라 저장소의 JSON 으로 떨어집니다. 유닛 11 · 건물 10 · AI 프리셋 10.',
+    story:
+      '게임 하나가 아니라 게임을 만드는 자리를 만들었습니다. 규칙(스탯 · 건물 · 전투 AI)이 코드에 있으면 숫자 하나를 만질 때마다 다시 빌드해야 해서, 규칙은 전부 데이터로 내리고 엔진은 데이터가 시킨 것만 하게 했습니다. 게임 로직이 프레임워크를 모른다는 것도 약속으로 두지 않았습니다 — tsconfig 가 React · Next · Phaser 를 막힌 타입으로 돌려세워, 그 셋을 부르는 순간 타입 체크에서 걸립니다.',
+    notes: [
+      '규칙은 data/ 의 JSON 에 있다 — 밸런스를 고치자고 다시 빌드하지 않는다',
+      'core 가 프레임워크를 부르면 tsconfig 의 paths 가 blocked.d.ts 로 돌려 타입 체크에서 막는다',
+      '경로탐색이 A* 가 아니라 FlowField 다. 목표 하나를 그리드 전체에 한 번 풀고 모든 유닛이 나눠 쓴다',
+      '전투 AI 는 상태 · 전이 조건 · 가중치를 이어 만든다. 프리셋 10종이 그렇게 나왔다',
+      '한국어 · 영어를 쓴다. 로케일을 주소가 아니라 쿠키로 기억해 주소 하나가 두 언어를 낸다',
+    ],
+    tech: ['Next.js', 'React', 'TypeScript', 'Tailwind', 'Phaser', 'Canvas'],
+    stack: [
+      { area: '스튜디오', items: ['Next.js 16 (App Router)', 'React 19', 'TypeScript', 'Tailwind CSS 4'] },
+      { area: '엔진', items: ['Phaser 4.2'] },
+      {
+        area: '핵심 로직',
+        items: ['FSM 전투 AI', 'FlowField 경로탐색', '충돌 · 시야 · 자원', 'Canvas 2D (스프라이트 · 맵 미리보기)'],
+      },
+      { area: '구조', items: ['npm workspaces 4패키지', 'zod 3 (데이터 스키마)', 'Zustand 5'] },
+      { area: '부가', items: ['next-intl 4 (한국어 · 영어)', 'Vercel Analytics · Speed Insights'] },
+    ],
+    og: '/og/bannerholm.png',
+    icon: '/icons/bannerholm.png',
+    status: 'live',
+    url: 'https://bannerholm-studio.jubrolab.dev/',
   },
 ];
 

@@ -2,9 +2,8 @@
  * 저장소에 OG 이미지가 없는 프로젝트의 카드를 만든다.
  *
  * 나머지는 원본 프로젝트의 파일을 그대로 복사해 `public/og/` 에 두었다.
- * 여기서 만드는 셋은 각 프로젝트의 실제 재료를 쓴다 — 없는 그림을 지어내지 않는다.
+ * 여기서 만드는 둘은 각 프로젝트의 실제 재료를 쓴다 — 없는 그림을 지어내지 않는다.
  *   - Specast        : 저장소의 브랜드 마크(네 소스가 하나의 SPEC 으로 수렴)를 확대
- *   - Vanguard       : 게임이 실제로 쓰는 Tiny Swords 타일셋 + 유닛 스프라이트 합성
  *   - Stock Analyzer : CLI 라 화면이 없어, 이 도구가 뱉는 리포트의 생김새를 축약
  *
  * 원본 프로젝트에 opengraph-image 가 생기면 이 스크립트 대신 그 파일을 복사하면 된다.
@@ -14,10 +13,9 @@
  *   npm run og
  */
 import sharp from 'sharp';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
-const TOY = '/Users/jangtaegyu/Desktop/ToyProject';
 const OUT = path.join(process.cwd(), 'public/og');
 const W = 1200;
 const H = 630;
@@ -93,108 +91,6 @@ const specast = `
 
 await sharp(Buffer.from(specast)).png().toFile(path.join(OUT, 'specast.png'));
 console.log('✓ specast.png');
-
-/* ────────────────────────────────────────────────────────────
-   Chronicles of the Vanguard — 실제 타일셋 + 유닛 스프라이트 합성
-   ──────────────────────────────────────────────────────────── */
-const VC = path.join(TOY, 'vc-studio/assets');
-
-// 잔디 타일: Tilemap_Flat.png 의 초록 블록 내부만 잘라 반복한다.
-const TILE = 84;
-const grass = await sharp(path.join(VC, 'tilesets/Tilemap_Flat.png'))
-  .extract({ left: 46, top: 46, width: 96, height: 96 })
-  .resize(TILE, TILE)
-  .toBuffer();
-
-// sharp 는 composite() 를 두 번 부르면 앞의 것을 덮어쓴다. 잔디는 먼저 구워둔다.
-const field = await sharp({
-  create: { width: W, height: H, channels: 4, background: '#7fa845' },
-})
-  .composite(
-    Array.from({ length: Math.ceil(H / TILE) }, (_, row) =>
-      Array.from({ length: Math.ceil(W / TILE) }, (_, col) => ({
-        input: grass,
-        left: col * TILE,
-        top: row * TILE,
-      })),
-    ).flat(),
-  )
-  .png()
-  .toBuffer();
-
-// 유닛: 아이들 시트의 첫 프레임(192×192)만 뽑는다.
-const frame = (file, index = 0, size = 300) =>
-  sharp(path.join(VC, file))
-    .extract({ left: index * 192, top: 0, width: 192, height: 192 })
-    .resize(size, size, { kernel: 'nearest' })
-    .toBuffer();
-
-const [warrior, archer] = await Promise.all([
-  frame('entities/units/warrior/Blue_Warrior_Idle.png', 0, 310),
-  frame('entities/units/archer/Red_Archer_Idle.png', 0, 260),
-]);
-
-// 시야 안개 · 경로 · 타이틀
-const overlay = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-  <defs>
-    <radialGradient id="fog" cx="0.5" cy="0.46" r="0.62">
-      <stop offset="0.45" stop-color="#0b1408" stop-opacity="0"/>
-      <stop offset="1"    stop-color="#0b1408" stop-opacity="0.86"/>
-    </radialGradient>
-    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0b1408" stop-opacity="0"/>
-      <stop offset="0.42" stop-color="#0b1408" stop-opacity="0.82"/>
-      <stop offset="1" stop-color="#0b1408" stop-opacity="0.94"/>
-    </linearGradient>
-  </defs>
-
-  <!-- 타일 격자 -->
-  <g stroke="#1c2b12" stroke-opacity="0.30">
-    ${Array.from({ length: 15 }, (_, i) => `<path d="M${i * 84} 0V${H}"/>`).join('')}
-    ${Array.from({ length: 8 }, (_, i) => `<path d="M0 ${i * 84}H${W}"/>`).join('')}
-  </g>
-
-  <!-- A* 경로: 웨이포인트를 꺾어 가는 격자 경로 -->
-  <path d="M360 340 L462 340 L462 232 L714 232 L714 316 L826 316"
-        fill="none" stroke="#f7e06a" stroke-width="7" stroke-linecap="round"
-        stroke-dasharray="3 17" opacity="0.95"/>
-  <g fill="none" stroke="#f7e06a" stroke-width="4" opacity="0.9">
-    <rect x="452" y="222" width="20" height="20"/>
-    <rect x="704" y="306" width="20" height="20"/>
-  </g>
-  <circle cx="846" cy="316" r="14" fill="none" stroke="#f7e06a" stroke-width="5" opacity="0.95"/>
-
-  <!-- 선택 타원 -->
-  <ellipse cx="301" cy="358" rx="72" ry="23" fill="none" stroke="#63c8ff" stroke-width="5" opacity="0.92"/>
-  <ellipse cx="906" cy="368" rx="60" ry="19" fill="none" stroke="#ff6f5e" stroke-width="5" opacity="0.92"/>
-
-  <!-- 시야 안개 -->
-  <rect width="${W}" height="${H}" fill="url(#fog)"/>
-  <rect y="330" width="${W}" height="300" fill="url(#plate)"/>
-
-  <!-- 타이틀 -->
-  <g transform="translate(600 484)" text-anchor="middle">
-    <text font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="70"
-          font-weight="700" letter-spacing="-1.5" fill="#f6f2e4">Chronicles of the Vanguard</text>
-    <text y="48" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="26"
-          fill="#c8cbb4">타일 위에서 굴러가는 2D 실시간 전략 · 맵 에디터 포함</text>
-    <text y="98" font-family="ui-monospace, Menlo, monospace" font-size="18" letter-spacing="3.4"
-          fill="#9aa383">A* PATHFINDING · FSM AI · FOG OF WAR · 24 UNITS</text>
-  </g>
-</svg>`;
-
-const vanguard = await sharp(field)
-  .composite([
-    { input: warrior, left: 146, top: 128 },
-    { input: archer, left: 776, top: 176 },
-    { input: Buffer.from(overlay), left: 0, top: 0 },
-  ])
-  .png()
-  .toBuffer();
-
-await writeFile(path.join(OUT, 'vanguard.png'), vanguard);
-console.log('✓ vanguard.png');
 
 /* ────────────────────────────────────────────────────────────
    AI Stock Analyzer — 리포트 화면을 그대로 축약

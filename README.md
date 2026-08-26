@@ -11,7 +11,7 @@
 
 | 자리 | 무엇 |
 | --- | --- |
-| 가운데 | 관계도. 프로젝트 13 + 공유 기술 11, 선 63개. 노드를 끌어 흩을 수 있다 |
+| 가운데 | 관계도. 프로젝트 13 + 공유 기술 11, 선 62개. 노드를 끌어 흩을 수 있다 |
 | 프로젝트 노드 | 누르면 오른쪽에 상세(왜 만들었는지 · 짚어둘 것 · 스택)가 열린다 |
 | 왼쪽 아래 | 기술 필터 11개. 고르면 그 기술을 쓴 프로젝트만 남는다 |
 | 오른쪽 위 | 분류 필터(게임 · 도구 · 작품). 기술 필터와 함께 걸린다 |
@@ -43,7 +43,7 @@ npx tsc --noEmit
 ```bash
 npm run glyphs   # 기술 글리프 → data/tech-icons.ts (simple-icons + 없는 것은 직접 그림)
 npm run icons    # 각 프로젝트 저장소의 앱 아이콘 → public/icons/*.png (512 정규화)
-npm run og       # 저장소에 OG 이미지가 없는 넷을 만든다 → public/og/
+npm run og       # 저장소에 OG 이미지가 없는 둘을 만든다 → public/og/
 npm run brand    # 파비콘(app/icon.svg)과 사이트 OG 카드
 node scripts/make-honeycomb.mjs   # 바탕 벌집의 '채운 칸' 레이어 → globals.css 에 붙이는 base64
 ```

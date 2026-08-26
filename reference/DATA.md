@@ -19,14 +19,6 @@
 - [배포전] https://Specast.jubrolab.dev/
 - /Users/jangtaegyu/Desktop/ToyProject/specast
 
-## Chronicles of the Vanguard
-
-- https://vc-editor.jubrolab.dev/
-- https://vc-rts.jubrolab.dev/
-- /Users/jangtaegyu/Desktop/ToyProject/vc-studio
-  - /Users/jangtaegyu/Desktop/ToyProject/vc-studio/apps/editor
-  - /Users/jangtaegyu/Desktop/ToyProject/vc-studio/apps/game-rts
-
 ## Token Generator
 
 - https://token-generator.jubrolab.dev/
@@ -67,3 +59,14 @@
   - OG 카드가 저장소에 파일로 없다 — `app/opengraph-image.tsx` 가 빌드 때 굽는다.
     그래서 배포본에서 받아 온다: `curl -o public/og/impastile.png
     https://impastile.jubrolab.dev/opengraph-image`
+
+## Bannerholm
+
+- https://bannerholm-studio.jubrolab.dev/
+- /Users/jangtaegyu/Desktop/ToyProject/bannerholm
+  - 스튜디오는 /Users/jangtaegyu/Desktop/ToyProject/bannerholm/apps/studio
+  - Impastile 과 같다 — OG 카드가 파일이 아니라 `app/opengraph-image.tsx` 라
+    배포본에서 받아 온다: `curl -o public/og/bannerholm.png
+    https://bannerholm-studio.jubrolab.dev/opengraph-image`
+  - 아이콘도 파일이 아니다. 마크가 `apps/studio/src/lib/brandMark.ts` 의 문자열이라
+    `collect-icons.mjs` 의 `DRAWN` 에 같은 도형을 옮겨 적어 굽는다.
