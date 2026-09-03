@@ -125,6 +125,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
+        <meta name="google-site-verification" content="EohLIsv996hipvC-zZPba5ClWreNM6yKZDXtRCkpWP8" />
       </head>
       <body className={`${spaceGrotesk.variable} ${gothicA1.variable} ${plexMono.variable}`}>
         {children}
