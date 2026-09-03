@@ -37,8 +37,8 @@ npx tsc --noEmit     # 변경 후 이 둘은 항상 통과시켜 둔다
 | `data/tech-icons.ts` | **생성물.** 기술 글리프 path — 칩(`<svg>`)과 캔버스(`Path2D`)가 같은 문자열 |
 | `scripts/make-glyphs.mjs` | 그 글리프를 굽는다. 로고는 simple-icons, 없는 것은 `DRAWN` |
 | `app/globals.css` | 색·글꼴 토큰과 바탕 세 겹. 패턴 SVG 는 base64 로 박아둔다 |
-| `app/page.tsx` | 바탕 겹치는 순서 = DOM 순서(`.hive` → `::before` 테두리 → `.veil`) |
-| `data/site.ts` | 배포 도메인 한 줄. OG · canonical · sitemap · robots 가 전부 여기를 본다 |
+| `app/page.tsx` | 바탕 겹치는 순서 = DOM 순서(`.hive` → `::before` 테두리 → `.veil`). 캔버스가 못 주는 글(`sr-only` 목록)과 JSON-LD |
+| `data/site.ts` | 도메인·이름·소개 한 곳. OG · canonical · sitemap · robots · 메타데이터 · JSON-LD 가 전부 여기를 본다 |
 | `scripts/*.mjs` | 생성물(아이콘 · OG · 파비콘 · 벌집 채운 칸)을 굽는다 |
 
 ## 이 저장소의 규칙
@@ -72,6 +72,10 @@ npx tsc --noEmit     # 변경 후 이 둘은 항상 통과시켜 둔다
   `@custom-variant` 와 `graph.tsx` 의 `matchMedia` 가 같은 조건을 각각 적는다. 한쪽만 고치면
   글은 좁은 배치인데 물리는 넓은 배치로 굴러 노드가 글 밑으로 들어간다. 물리가 비워둘 위아래는
   머리말·필터 덩이를 `getBoundingClientRect` 로 재서 정한다 — 높이를 상수로 적지 않는다.
+- **검색 엔진은 캔버스를 못 읽는다.** 관계도가 `<canvas>` 라 손보기 전 HTML 에는 프로젝트
+  이름이 한 글자도 없었다. `page.tsx` 의 `ProjectIndex` 가 같은 `PROJECTS` 로 목록을 한 번
+  더 내놓는다(`sr-only` — 화면 낭독기도 이걸 읽는다). 여기에만 있는 말을 적지 않는다 —
+  화면에 없는 것을 검색 엔진에 파는 셈이 되고, 구조화 데이터도 화면과 어긋나면 무시당한다.
 - **바탕 타일은 배수를 맞춘다.** 채운 칸 타일(936×720.56)은 테두리 타일(156×90.07)의
   정수배다. 어긋나면 격자가 서로 밀린다.
 

@@ -1,8 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { COUNTS, PROJECTS, SHARED_TECH, type Project, type TechTag } from '@/data/projects';
+import {
+  COUNTS,
+  PROJECTS,
+  SHARED_TECH,
+  STATUS_LABEL,
+  type Project,
+  type TechTag,
+} from '@/data/projects';
 import { GLYPH_BOX, TECH_ICONS } from '@/data/tech-icons';
+import { SITE_EMAIL } from '@/data/site';
 import { TechIcon } from '@/components/tech-icon';
 import { BrandMark } from '@/components/brand-mark';
 
@@ -46,10 +54,12 @@ type ProjectNode = NodeBase & { kind: 'p'; project: Project; img: HTMLImageEleme
 type TechNode = NodeBase & { kind: 't'; tag: TechTag; count: number };
 type Node = ProjectNode | TechNode;
 
+/* 말은 데이터(STATUS_LABEL)에서 오고 색만 여기 있다 — 캔버스가 CSS 변수를 못 읽어
+   색은 어차피 여기 한 번 더 적어야 하지만, 글자는 화면과 검색 결과가 갈라질 자리다. */
 const STATUS: Record<Project['status'], { label: string; color: string }> = {
-  live: { label: '운영 중', color: '#5be49b' },
-  building: { label: '준비 중', color: '#ffc14d' },
-  ended: { label: '서비스 종료', color: '#ff7a7a' },
+  live: { label: STATUS_LABEL.live, color: '#5be49b' },
+  building: { label: STATUS_LABEL.building, color: '#ffc14d' },
+  ended: { label: STATUS_LABEL.ended, color: '#ff7a7a' },
 };
 
 /** 분류별 색·표기. 둘일 때는 삼항으로 갈랐는데, 셋이 되니 늘 하나가 조용히 빠졌다. */
@@ -481,10 +491,10 @@ export function Graph() {
             궁금한 사항은 여기로 문의 주세요
           </p>
           <a
-            href="mailto:ttggbbgg2@gmail.com"
+            href={`mailto:${SITE_EMAIL}`}
             className="mt-0.5 inline-block font-mono text-[11px] tracking-[0.06em] text-muted transition hover:text-bright"
           >
-            ttggbbgg2@gmail.com
+            {SITE_EMAIL}
           </a>
         </div>
       </div>

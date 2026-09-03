@@ -9,6 +9,16 @@
 export type ProjectStatus = 'live' | 'building' | 'ended';
 
 /**
+ * 상태를 사람이 읽는 말로. 상세 패널이 쓰고, 크롤러·화면 낭독기가 읽는 목록(page.tsx)이
+ * 같은 말을 쓴다 — 두 곳에 따로 적으면 화면과 검색 결과가 다른 말을 한다.
+ */
+export const STATUS_LABEL: Record<ProjectStatus, string> = {
+  live: '운영 중',
+  building: '준비 중',
+  ended: '서비스 종료',
+};
+
+/**
  * 관계도가 선을 잇는 태그. 여러 프로젝트가 나눠 쓰는 것만 여기에 둔다.
  *
  * Python 은 '돌아가는 앱이 올라탄 것' 이라는 다른 열 개의 기준에서 한 발 벗어나 있다.
